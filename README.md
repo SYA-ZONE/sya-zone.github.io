@@ -1,16 +1,14 @@
-## Hi there 👋
+# SYA Zone - Video Platform
 
-<!--
-**SYA-ZONE/sya-zone** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+A demonstration video platform frontend and backend for SYA Zone.
 
-Here are some ideas to get you started:
+## Features
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+*   Dynamic video listing from a backend API.
+*   Functional search for videos (searches titles, descriptions, and tags).
+*   Dark and Light theme toggle with localStorage persistence.
+*   Responsive design.
+*   Placeholders for Adsterra banner ads.
+*   Logo placeholder.
+
+## Project Structure
