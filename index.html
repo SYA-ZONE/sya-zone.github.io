@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questro - AI Problem Solver</title>
+    <style>
+        /* --- Premium Dark Theme & General Styling --- */
+        :root {
+            --primary-bg: #1a1a2e;
+            --secondary-bg: #16213e;
+            --card-bg: #0f3460;
+            --text-color: #e3e3e3;
+            --accent-color: #50e3c2;
+            --accent-hover: #48cfae;
+            --border-color: #2c3e50;
+            --error-color: #e74c3c;
+            --font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            --border-radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* --- Main Container --- */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--secondary-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(80, 227, 194, 0.4);
+        }
+
+        #history-btn {
+            background: none;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        #history-btn:hover {
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+        }
+
+        /* --- Input Area --- */
+        .input-area {
+            margin-bottom: 25px;
+        }
+
+        #question-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            font-family: var(--font-family);
+            resize: vertical;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #question-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(80, 227, 194, 0.2);
+        }
+
+        .file-upload-area {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        #image-upload-label {
+            padding: 12px 20px;
+            background-color: var(--card-bg);
+            color: var(--accent-color);
+            border: 1px dashed var(--accent-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #image-upload-label:hover {
+            background-color: #1b4a8b;
+        }
+        
+        #image-input {
+            display: none;
+        }
+        
+        #image-preview-container {
+            position: relative;
+        }
+
+        #image-preview {
+            max-height: 60px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+        
+        #remove-image-btn {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--error-color);
+            color: white;
+            border: 2px solid var(--secondary-bg);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            display: none;
+            line-height: 20px;
+            text-align: center;
+        }
+
+        #submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-bg);
+            background: var(--accent-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        #submit-btn:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+        
+        #submit-btn:disabled {
+            background: #555;
+            color: #999;
+            cursor: not-allowed;
+        }
+
+        /* --- Response Area --- */
+        h2 {
+            color: var(--text-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        #answer-box {
+            background-color: var(--primary-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            min-height: 100px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid var(--border-color);
+        }
+        
+        #answer-box.error {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        /* --- Loading Spinner --- */
+        .loader {
+            border: 5px solid #333;
+            border-top: 5px solid var(--accent-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- History Modal --- */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: var(--secondary-bg); margin: 5% auto; padding: 25px;
+            border: 1px solid var(--border-color); border-radius: var(--border-radius); width: 90%;
+            max-width: 700px; box-shadow: var(--shadow);
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .modal-header h2 { margin: 0; color: var(--accent-color); }
+        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-btn:hover { color: var(--text-color); }
+        #history-controls { display: flex; gap: 10px; margin-bottom: 15px; }
+        #search-history { flex-grow: 1; padding: 10px; background-color: var(--primary-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); }
+        #clear-history-btn { padding: 10px 15px; background-color: var(--error-color); color: white; border: none; border-radius: 8px; cursor: pointer; }
+        #history-list .history-item { background-color: var(--primary-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        #history-list .history-item h4 { color: var(--accent-color); margin-bottom: 8px; }
+        #history-list .history-item p { white-space: pre-wrap; word-wrap: break-word; opacity: 0.9; }
+        #history-list .history-item small { display: block; margin-top: 10px; opacity: 0.6; text-align: right; }
+        
+        /* -- NEW: Style for images inside the history panel -- */
+        .history-item-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+            object-fit: contain;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 20px; }
+            header h1 { font-size: 2rem; }
+            .modal-content { width: 95%; margin: 10% auto;}
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Questro</h1>
+            <button id="history-btn">History</button>
+        </header>
+
+        <main>
+            <div class="input-area">
+                <textarea id="question-input" placeholder="Ask a question or describe the image you upload..."></textarea>
+                
+                <div class="file-upload-area">
+                    <input type="file" id="image-input" accept="image/*">
+                    <label for="image-input" id="image-upload-label">Add Image</label>
+                    <div id="image-preview-container">
+                        <img id="image-preview" src="" alt="Image Preview">
+                        <button id="remove-image-btn">×</button>
+                    </div>
+                </div>
+
+                <button id="submit-btn">Get Answer</button>
+            </div>
+
+            <div class="response-area">
+                <h2>Answer</h2>
+                <div id="loader" class="loader"></div>
+                <div id="answer-box">Your answer will appear here...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>History</h2>
+                <span class="close-btn">×</span>
+            </div>
+            <div id="history-controls">
+                <input type="text" id="search-history" placeholder="Search in history...">
+                <button id="clear-history-btn">Clear All</button>
+            </div>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Element Selection ---
+        const questionInput = document.getElementById('question-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const loader = document.getElementById('loader');
+        const answerBox = document.getElementById('answer-box');
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const historyBtn = document.getElementById('history-btn');
+        const historyModal = document.getElementById('history-modal');
+        const closeModalBtn = document.querySelector('.close-btn');
+        const historyList = document.getElementById('history-list');
+        const clearHistoryBtn = document.getElementById('clear-history-btn');
+        const searchHistoryInput = document.getElementById('search-history');
+
+        // --- State Management ---
+        let imageData = null; // For the API call
+        let imageDataUrl = null; // NEW: For saving to history
+        let history = [];
+
+        // --- API Configuration ---
+        const API_KEY = 'AIzaSyDrEc4H6kALW4ZDgxM82pMiEaQrV3AkEtg';
+        const MODEL_NAME = 'gemini-1.5-flash';
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+
+
+        // --- Event Listeners ---
+        submitBtn.addEventListener('click', getAnswer);
+        imageInput.addEventListener('change', handleImageUpload);
+        removeImageBtn.addEventListener('click', resetImage);
+        historyBtn.addEventListener('click', openHistoryModal);
+        closeModalBtn.addEventListener('click', () => historyModal.style.display = 'none');
+        window.addEventListener('click', (event) => {
+            if (event.target == historyModal) {
+                historyModal.style.display = 'none';
+            }
+        });
+        clearHistoryBtn.addEventListener('click', clearHistory);
+        searchHistoryInput.addEventListener('input', (e) => displayHistory(e.target.value));
+
+        // --- On Load ---
+        document.addEventListener('DOMContentLoaded', loadHistory);
+
+
+        // --- Image Handling ---
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                resetImage();
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                // For the API (base64 only)
+                const base64String = reader.result.split(',')[1];
+                imageData = {
+                    mimeType: file.type,
+                    data: base64String
+                };
+
+                // NEW: For history (full data URL)
+                imageDataUrl = reader.result;
+
+                imagePreview.src = reader.result;
+                imagePreview.style.display = 'block';
+                removeImageBtn.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetImage() {
+            imageInput.value = '';
+            imagePreview.src = '';
+            imagePreview.style.display = 'none';
+            removeImageBtn.style.display = 'none';
+            imageData = null;
+            imageDataUrl = null; // NEW: Reset the URL too
+        }
+
+        // --- Main AI Function ---
+        async function getAnswer() {
+            const userQuestion = questionInput.value.trim();
+            if (!userQuestion && !imageData) {
+                showError('Please enter a question or upload an image.');
+                return;
+            }
+            
+            setLoadingState(true);
+
+            const parts = [];
+            if (userQuestion) {
+                parts.push({ text: userQuestion });
+            }
+            if (imageData) {
+                parts.push({
+                    inline_data: {
+                        mime_type: imageData.mimeType,
+                        data: imageData.data
+                    }
+                });
+            }
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts }] })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    const errorMessage = data?.error?.message || `An unknown API error occurred. Status: ${response.status}`;
+                    throw new Error(errorMessage);
+                }
+                
+                if (!data.candidates || data.candidates.length === 0) {
+                     showError('The AI did not return a response. This may be due to a safety block (e.g., the image was flagged). Please try a different prompt or image.');
+                     return;
+                }
+                
+                const aiResponseText = data.candidates[0].content.parts[0].text;
+                answerBox.classList.remove('error');
+                answerBox.textContent = aiResponseText;
+
+                // Pass the imageDataUrl to be saved in history
+                saveToHistory(userQuestion, aiResponseText, imageDataUrl);
+
+            } catch (error) {
+                console.error('Error fetching AI response:', error);
+                showError(`An error occurred: ${error.message}. Please check your Google Cloud project's billing and API settings.`);
+            } finally {
+                setLoadingState(false);
+                resetImage();
+            }
+        }
+
+        // --- UI Helper Functions ---
+        function setLoadingState(isLoading) {
+            loader.style.display = isLoading ? 'block' : 'none';
+            submitBtn.disabled = isLoading;
+            if (isLoading) {
+                answerBox.textContent = '';
+                answerBox.classList.remove('error');
+            }
+        }
+
+        function showError(message) {
+            answerBox.textContent = message;
+            answerBox.classList.add('error');
+        }
+        
+        // --- History Management ---
+        function loadHistory() {
+            const storedHistory = localStorage.getItem('questroHistory');
+            if (storedHistory) { history = JSON.parse(storedHistory); }
+        }
+
+        // UPDATED: Now accepts an imageUrl
+        function saveToHistory(question, answer, imageUrl) {
+            const timestamp = new Date().toISOString();
+            const historyItem = { question, answer, timestamp, image: imageUrl }; // NEW: image property added
+            history.unshift(historyItem);
+            localStorage.setItem('questroHistory', JSON.stringify(history));
+        }
+
+        function openHistoryModal() {
+            displayHistory();
+            historyModal.style.display = 'block';
+        }
+
+        // UPDATED: Now displays the image if it exists
+        function displayHistory(searchTerm = '') {
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                historyList.innerHTML = '<p>No history yet. Ask a question to get started!</p>';
+                return;
+            }
+            const filteredHistory = history.filter(item => 
+                (item.question && item.question.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (item.answer && item.answer.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
+            if (filteredHistory.length === 0) {
+                historyList.innerHTML = '<p>No history items match your search.</p>';
+                return;
+            }
+            filteredHistory.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'history-item';
+                
+                const questionEl = document.createElement('h4');
+                questionEl.textContent = 'Q: ' + (item.question || "[Image-based question]");
+                
+                // NEW: Check for an image and create an img element if it exists
+                if (item.image) {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = item.image;
+                    imgEl.className = 'history-item-image';
+                    itemEl.appendChild(imgEl);
+                }
+
+                const answerEl = document.createElement('p');
+                answerEl.textContent = 'A: ' + item.answer;
+
+                const timeEl = document.createElement('small');
+                timeEl.textContent = new Date(item.timestamp).toLocaleString();
+                
+                itemEl.appendChild(questionEl);
+                itemEl.appendChild(answerEl);
+                itemEl.appendChild(timeEl);
+                historyList.appendChild(itemEl);
+            });
+        }
+        
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
+                history = [];
+                localStorage.removeItem('questroHistory');
+                displayHistory();
+            }
+        }
+
+    </script>
+</body>
+</html>
