@@ -31,13 +31,12 @@
             background-color: var(--primary-bg);
             color: var(--text-color);
             display: flex;
-            flex-direction: column; /* NEW: Allow footer ad */
-            align-items: center; /* NEW: Center all content */
+            justify-content: center; /* Center main layout */
             min-height: 100vh;
             padding: 20px;
         }
         
-        /* --- NEW: Layout for App + Side Ad --- */
+        /* --- Layout for App + Side Ad --- */
         .main-layout {
             display: flex;
             justify-content: center;
@@ -47,7 +46,7 @@
             max-width: 1050px; /* Accommodate app (800) + ad (160) + gap */
         }
 
-        /* --- Main App Container (no change) --- */
+        /* --- Main App Container --- */
         .container {
             width: 100%;
             max-width: 800px;
@@ -58,34 +57,28 @@
             border: 1px solid var(--border-color);
         }
 
-        /* --- NEW: Container for Side Ad --- */
+        /* --- Side Ad Container --- */
         .side-ad-container {
             width: 160px;
             height: 600px;
-            margin-top: 30px; /* Align nicely with the app container */
+            margin-top: 30px; 
+            flex-shrink: 0; /* Prevent it from shrinking */
         }
         
-        /* --- NEW: Container for Footer Ad --- */
-        .footer-ad-container {
+        /* --- *** UPDATED: Banner Ad Container *** --- */
+        /* Now placed inside the main container */
+        .banner-ad-container {
             margin-top: 30px;
-            width: 728px;
-            height: 90px;
+            width: 100%; /* Makes it responsive to the parent container */
+            display: flex;
+            justify-content: center;
         }
 
-        /* --- Header (no change) --- */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
+        /* All other app styles remain the same */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
         header h1 { color: var(--accent-color); font-size: 2.5rem; font-weight: 700; text-shadow: 0 0 10px rgba(80, 227, 194, 0.4); }
         #history-btn { background: none; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: background-color 0.3s, color 0.3s; }
         #history-btn:hover { background-color: var(--accent-color); color: var(--primary-bg); }
-
-        /* All other app styles remain the same */
         .input-area { margin-bottom: 25px; }
         #question-input { width: 100%; min-height: 120px; padding: 15px; border-radius: var(--border-radius); border: 1px solid var(--border-color); background-color: var(--primary-bg); color: var(--text-color); font-size: 1rem; font-family: var(--font-family); resize: vertical; transition: border-color 0.3s, box-shadow 0.3s; }
         #question-input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(80, 227, 194, 0.2); }
@@ -121,20 +114,9 @@
         
         /* --- Responsive Design --- */
         @media (max-width: 1024px) {
-            /* NEW: Hide the side ad on tablets and mobile phones */
+            /* Hide the side ad on tablets and mobile phones */
             .side-ad-container {
                 display: none;
-            }
-            .main-layout {
-                max-width: 800px;
-            }
-        }
-        @media (max-width: 768px) {
-            /* NEW: Make footer ad container responsive */
-            .footer-ad-container {
-                width: 100%;
-                max-width: 320px; /* Or whatever the smaller ad size is */
-                height: 50px; /* Adjust for mobile banner */
             }
         }
         @media (max-width: 600px) {
@@ -173,12 +155,26 @@
                     <div id="loader" class="loader"></div>
                     <div id="answer-box">Your answer will appear here...</div>
                 </div>
+
+                <!-- ============================================== -->
+                <!-- ===== NEW LOCATION FOR BANNER AD CONTAINER ===== -->
+                <!-- ============================================== -->
+                <div class="banner-ad-container">
+                    <script type="text/javascript">
+                        atOptions = {
+                            'key' : '3c8de023f8d3a894553c08b9082dbcaa',
+                            'format' : 'iframe',
+                            'height' : 90,
+                            'width' : 728,
+                            'params' : {}
+                        };
+                    </script>
+                    <script type="text/javascript" src="//www.highperformanceformat.com/3c8de023f8d3a894553c08b9082dbcaa/invoke.js"></script>
+                </div>
             </main>
         </div>
 
-        <!-- ===================================== -->
-        <!-- ===== NEW: SIDE AD CONTAINER ======== -->
-        <!-- ===================================== -->
+        <!-- Side Ad Container (Only visible on desktop) -->
         <div class="side-ad-container">
             <script type="text/javascript">
                 atOptions = {
@@ -193,23 +189,6 @@
         </div>
     </div>
     
-    <!-- ======================================= -->
-    <!-- ===== NEW: FOOTER AD CONTAINER ====== -->
-    <!-- ======================================= -->
-    <div class="footer-ad-container">
-        <script type="text/javascript">
-            atOptions = {
-                'key' : '3c8de023f8d3a894553c08b9082dbcaa',
-                'format' : 'iframe',
-                'height' : 90,
-                'width' : 728,
-                'params' : {}
-            };
-        </script>
-        <script type="text/javascript" src="//www.highperformanceformat.com/3c8de023f8d3a894553c08b9082dbcaa/invoke.js"></script>
-    </div>
-
-
     <!-- History Modal (No Change) -->
     <div id="history-modal" class="modal">
         <div class="modal-content">
@@ -227,8 +206,6 @@
 
     <script>
         // The JavaScript for the app functionality remains exactly the same.
-        // The ad scripts handle their own loading and display.
-
         const questionInput = document.getElementById('question-input');
         const submitBtn = document.getElementById('submit-btn');
         const loader = document.getElementById('loader');
