@@ -31,22 +31,20 @@
             background-color: var(--primary-bg);
             color: var(--text-color);
             display: flex;
-            justify-content: center; /* Center main layout */
+            justify-content: center;
             min-height: 100vh;
             padding: 20px;
         }
         
-        /* --- Layout for App + Side Ad --- */
         .main-layout {
             display: flex;
             justify-content: center;
             align-items: flex-start;
             gap: 20px;
             width: 100%;
-            max-width: 1050px; /* Accommodate app (800) + ad (160) + gap */
+            max-width: 1050px;
         }
 
-        /* --- Main App Container --- */
         .container {
             width: 100%;
             max-width: 800px;
@@ -57,23 +55,26 @@
             border: 1px solid var(--border-color);
         }
 
-        /* --- Side Ad Container --- */
         .side-ad-container {
             width: 160px;
             height: 600px;
             margin-top: 30px; 
-            flex-shrink: 0; /* Prevent it from shrinking */
+            flex-shrink: 0;
         }
         
-        /* --- *** UPDATED: Banner Ad Container *** --- */
-        /* Now placed inside the main container */
         .banner-ad-container {
             margin-top: 30px;
-            width: 100%; /* Makes it responsive to the parent container */
+            width: 100%;
             display: flex;
             justify-content: center;
         }
-
+        
+        /* --- *** THE CRITICAL FIX FOR RESPONSIVE ADS *** --- */
+        .banner-ad-container iframe {
+            max-width: 100%; /* This forces the ad to shrink to fit its container on small screens */
+            border: none;    /* A good practice for ad iframes */
+        }
+        
         /* All other app styles remain the same */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
         header h1 { color: var(--accent-color); font-size: 2.5rem; font-weight: 700; text-shadow: 0 0 10px rgba(80, 227, 194, 0.4); }
@@ -112,12 +113,8 @@
         #history-list .history-item small { display: block; margin-top: 10px; opacity: 0.6; text-align: right; }
         .history-item-image { max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--border-color); object-fit: contain; }
         
-        /* --- Responsive Design --- */
         @media (max-width: 1024px) {
-            /* Hide the side ad on tablets and mobile phones */
-            .side-ad-container {
-                display: none;
-            }
+            .side-ad-container { display: none; }
         }
         @media (max-width: 600px) {
             body { padding: 10px; }
@@ -156,9 +153,7 @@
                     <div id="answer-box">Your answer will appear here...</div>
                 </div>
 
-                <!-- ============================================== -->
-                <!-- ===== NEW LOCATION FOR BANNER AD CONTAINER ===== -->
-                <!-- ============================================== -->
+                <!-- Banner Ad Container -->
                 <div class="banner-ad-container">
                     <script type="text/javascript">
                         atOptions = {
