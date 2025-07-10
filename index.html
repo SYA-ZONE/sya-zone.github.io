@@ -69,10 +69,14 @@
             justify-content: center;
         }
         
-        /* --- *** THE CRITICAL FIX FOR RESPONSIVE ADS *** --- */
-        .banner-ad-container iframe {
-            max-width: 100%; /* This forces the ad to shrink to fit its container on small screens */
-            border: none;    /* A good practice for ad iframes */
+        /* --- *** FINAL RESPONSIVE AD FIX *** --- */
+        .banner-ad-container iframe,
+        .banner-ad-container ins { /* Target both potential ad elements */
+            max-width: 100% !important; /* Force override of the ad script's fixed width */
+            width: 728px;               /* Set the ideal width */
+            height: auto;               /* Let height be calculated automatically */
+            aspect-ratio: 728 / 90;     /* Maintain the ad's shape as it shrinks */
+            border: none;
         }
         
         /* All other app styles remain the same */
