@@ -26,19 +26,6 @@
         
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
 
-        /* --- Custom Toast Notification (No Alerts) --- */
-        #toast-container {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; display: flex; flex-direction: column; gap: 10px;
-        }
-        .toast {
-            background: #333; color: #fff; padding: 12px 24px; border-radius: 4px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); font-size: 14px;
-            animation: fadeIn 0.3s, fadeOut 0.3s 2.5s forwards;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-
         /* --- Header --- */
         header {
             position: fixed; top: 0; left: 0; right: 0; height: 60px;
@@ -61,14 +48,33 @@
         }
         .menu-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 8px; position: relative; }
 
-        /* --- User Dropdown --- */
-        .user-dropdown {
-            position: absolute; top: 50px; right: 10px; width: 200px;
-            background: #222; border: 1px solid var(--border); border-radius: 8px;
-            display: none; flex-direction: column; overflow: hidden; z-index: 200;
+        /* --- Notifications UI --- */
+        .notif-badge {
+            position: absolute; top: 4px; right: 4px;
+            background: var(--red); color: white; font-size: 10px; font-weight: bold;
+            padding: 2px 5px; border-radius: 10px; border: 2px solid var(--bg);
+            display: none;
         }
-        .dropdown-item { padding: 12px; cursor: pointer; display: flex; gap: 10px; align-items: center; font-size: 14px; }
-        .dropdown-item:hover { background: #333; }
+        .notif-dropdown {
+            position: absolute; top: 55px; right: 60px; width: 300px;
+            background: #282828; border: 1px solid var(--border); border-radius: 8px;
+            display: none; flex-direction: column; z-index: 200; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .notif-item { padding: 12px; border-bottom: 1px solid #3e3e3e; display: flex; gap: 10px; }
+        .notif-item:hover { background: #333; }
+        .notif-text { font-size: 13px; line-height: 1.4; }
+        .notif-time { font-size: 11px; color: var(--text-gray); margin-top: 4px; }
+
+        /* --- User Menu --- */
+        .user-dropdown {
+            position: absolute; top: 55px; right: 10px; width: 220px;
+            background: #282828; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: none; flex-direction: column; overflow: hidden; z-index: 300;
+        }
+        .dropdown-header { padding: 15px; border-bottom: 1px solid #3e3e3e; display: flex; gap: 10px; align-items: center; }
+        .dropdown-item { padding: 12px 15px; cursor: pointer; display: flex; gap: 12px; align-items: center; font-size: 14px; color: #eee; }
+        .dropdown-item:hover { background: #3e3e3e; }
 
         /* --- Sidebar --- */
         .sidebar {
@@ -137,8 +143,18 @@
         }
         .player-wrapper iframe { width: 100%; height: 100%; border: none; }
         .actions { display: flex; justify-content: space-between; margin-top: 10px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .btn-pill { background: var(--surface); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .btn-pill:hover { background: #333; }
+        .btn-pill { background: var(--surface); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+        /* --- Toast --- */
+        #toast {
+            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
+            text-align: center; border-radius: 4px; padding: 16px; position: fixed;
+            z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
         /* --- Modals --- */
         .modal-bg {
@@ -160,8 +176,8 @@
 </head>
 <body>
 
-    <!-- TOAST NOTIFICATIONS -->
-    <div id="toast-container"></div>
+    <!-- TOAST -->
+    <div id="toast">Notification</div>
 
     <!-- HEADER -->
     <header>
@@ -173,18 +189,32 @@
             <input type="text" id="searchInp" placeholder="Search..." oninput="searchVideos()">
             <i class="fas fa-search" style="color:#aaa; margin-right:16px;"></i>
         </div>
-        <div style="display:flex; gap:12px; align-items:center; position: relative;">
+        <div style="display:flex; gap:12px; align-items:center;">
             <button class="menu-btn" onclick="openModal('uploadModal')"><i class="fas fa-video"></i></button>
             
-            <!-- Auth Section -->
+            <!-- NOTIFICATIONS -->
+            <div style="position:relative;">
+                <button class="menu-btn" onclick="toggleNotif()">
+                    <i class="fas fa-bell"></i>
+                    <div id="notifBadge" class="notif-badge">0</div>
+                </button>
+                <div id="notifDropdown" class="notif-dropdown">
+                    <div style="padding:15px; text-align:center; color:#666;">No Notifications</div>
+                </div>
+            </div>
+
             <div id="authBtnArea">
                 <button class="btn-main" style="padding:6px 12px;" onclick="openModal('authModal')">Sign In</button>
             </div>
 
-            <!-- User Menu -->
-            <div id="userMenu" class="user-dropdown">
-                <div style="padding:15px; border-bottom:1px solid #333; font-weight:bold;" id="menuEmail">User</div>
+            <!-- Profile Dropdown -->
+            <div id="profileMenu" class="user-dropdown">
+                <div class="dropdown-header">
+                    <div id="menuAvatar" class="avatar-circle"></div>
+                    <div style="font-size:14px; font-weight:bold; overflow:hidden; text-overflow:ellipsis;" id="menuName">User</div>
+                </div>
                 <div class="dropdown-item" onclick="nav('studio')"><i class="fas fa-chart-bar"></i> Studio</div>
+                <div class="dropdown-item" onclick="nav('history')"><i class="fas fa-history"></i> History</div>
                 <div class="dropdown-item" onclick="userSignOut()"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
             </div>
         </div>
@@ -205,7 +235,7 @@
 
     <!-- MAIN -->
     <main>
-        <!-- Home View -->
+        <!-- Home -->
         <div id="homeView">
             <div class="chips-bar">
                 <div class="chip active" onclick="filter('All')">All</div>
@@ -214,12 +244,10 @@
                 <div class="chip" onclick="filter('Tech')">Tech</div>
                 <div class="chip" onclick="filter('Coding')">Coding</div>
             </div>
-            <div class="grid" id="videoGrid">
-                <div style="padding:20px; color:#aaa;">Loading...</div>
-            </div>
+            <div class="grid" id="videoGrid"></div>
         </div>
 
-        <!-- Player View -->
+        <!-- Player -->
         <div id="playerView">
             <button onclick="nav('home')" style="background:none; border:none; color:#aaa; margin-bottom:10px; cursor:pointer;"><i class="fas fa-arrow-left"></i> Back</button>
             <div class="player-wrapper" id="pFrame"></div>
@@ -249,26 +277,20 @@
             </div>
         </div>
 
-        <!-- List View -->
+        <!-- List -->
         <div id="listView" class="hidden">
             <h2 id="listTitle" style="margin-bottom:20px;">History</h2>
             <div class="grid" id="listGrid"></div>
         </div>
 
-        <!-- Studio View -->
+        <!-- Studio -->
         <div id="studioView" class="hidden">
             <h1>Channel Studio</h1>
-            <div style="display:flex; gap:20px; margin-bottom:30px;">
-                <div style="background:#1f1f1f; padding:20px; border-radius:10px; flex:1;">
-                    <h2 id="sTotalViews">0</h2>
-                    <p style="color:#aaa;">Total Views</p>
-                </div>
-                <div style="background:#1f1f1f; padding:20px; border-radius:10px; flex:1;">
-                    <h2 id="sTotalSubs">42</h2>
-                    <p style="color:#aaa;">Subscribers</p>
-                </div>
+            <div style="margin:20px 0; background:#1f1f1f; padding:20px; border-radius:10px;">
+                <h2 id="sTotalViews">0 Views</h2>
+                <p style="color:#aaa;">Total Channel Views</p>
             </div>
-            <div style="background:#1f1f1f; padding:20px; border-radius:10px; margin-bottom:30px;">
+            <div style="background:#1f1f1f; padding:20px; border-radius:10px; margin-bottom:20px;">
                 <canvas id="studioChart" style="max-height:250px;"></canvas>
             </div>
             <h3>Your Videos</h3>
@@ -282,7 +304,7 @@
             <h2>Sign In</h2>
             <input type="email" id="em" class="inp" placeholder="Email">
             <input type="password" id="pw" class="inp" placeholder="Password">
-            <button class="btn-main" onclick="emailAuth()">Login / Create Account</button>
+            <button class="btn-main" onclick="emailAuth()">Login / Register</button>
             <div style="text-align:center; margin:10px; color:#aaa;">or</div>
             <button class="btn-main" style="background:#fff; color:#000;" onclick="googleAuth()">Google Login</button>
             <button style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer;" onclick="closeModals()">Cancel</button>
@@ -299,7 +321,7 @@
                 <option value="Tech">Tech</option>
                 <option value="Coding">Coding</option>
             </select>
-            <input type="text" id="uThumb" class="inp" placeholder="Thumbnail URL (Leave empty for Auto-YouTube)">
+            <input type="text" id="uThumb" class="inp" placeholder="Thumbnail URL (Optional - Auto YouTube)">
             <input type="text" id="uUrl" class="inp" placeholder="Video URL (YouTube/Drive)">
             <input type="text" id="uDesc" class="inp" placeholder="Description">
             <button class="btn-main" onclick="uploadVideo()">Upload</button>
@@ -327,95 +349,131 @@ const firebaseConfig = {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getDatabase(app);
-        } catch(e) { console.error("Firebase Config Missing"); }
+        } catch(e) { console.error("Config Missing"); }
 
         const provider = new GoogleAuthProvider();
         let currentUser = null;
         let allVideos = [];
         let currentVideoId = null;
+        let notifications = [];
+        let unreadCount = 0;
 
-        // --- TOAST SYSTEM (No Alerts) ---
+        // --- TOAST SYSTEM ---
         window.showToast = (msg) => {
-            const c = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.innerText = msg;
-            c.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
+            const x = document.getElementById("toast");
+            x.className = "show";
+            x.innerText = msg;
+            setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
         };
 
-        // --- HELPER: YouTube Thumb Extractor (FIXED) ---
-        window.getYouTubeThumb = (url) => {
-            if(!url) return null;
-            let id = null;
-            if(url.includes('youtube.com/watch?v=')) id = url.split('v=')[1]?.split('&')[0];
-            else if(url.includes('youtu.be/')) id = url.split('youtu.be/')[1];
+        // --- NOTIFICATION LOGIC ---
+        window.addNotification = (text) => {
+            notifications.unshift({ text: text, time: 'Just now' });
+            unreadCount++;
+            const badge = document.getElementById('notifBadge');
+            badge.innerText = unreadCount;
+            badge.style.display = 'block'; 
+            renderNotifDropdown();
+        };
+
+        function renderNotifDropdown() {
+            const dd = document.getElementById('notifDropdown');
+            if (notifications.length === 0) {
+                dd.innerHTML = '<div style="padding:15px; text-align:center; color:#666;">No Notifications</div>';
+                return;
+            }
+            dd.innerHTML = '';
+            notifications.forEach(n => {
+                dd.innerHTML += `
+                    <div class="notif-item">
+                        <div style="background:var(--accent); width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0;"></div>
+                        <div>
+                            <div class="notif-text">${n.text}</div>
+                            <div class="notif-time">${n.time}</div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        window.toggleNotif = () => {
+            const dd = document.getElementById('notifDropdown');
+            const badge = document.getElementById('notifBadge');
             
-            return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+            if (dd.style.display === 'flex') {
+                dd.style.display = 'none';
+            } else {
+                dd.style.display = 'flex';
+                // Reset count
+                unreadCount = 0;
+                badge.style.display = 'none';
+            }
+            document.getElementById('profileMenu').classList.remove('show'); // Close profile
         };
 
-        window.getThumbHTML = (thumbUrl, videoUrl) => {
-            // Try explicit thumbnail -> Then YouTube Auto -> Then Placeholder
-            let src = thumbUrl;
-            if(!src || src.length < 5) src = window.getYouTubeThumb(videoUrl);
-            if(!src) src = 'https://placehold.co/600x400/222/555?text=No+Thumb';
-            
-            return `<img src="${src}" style="width:100%; height:100%; object-fit:cover;">`;
+        // --- CORE HELPER FUNCTIONS ---
+        window.extractYouTubeID = (url) => {
+            if (!url) return null;
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[7].length == 11) ? match[7] : null;
         };
 
-        window.parseVideoUrl = (url) => {
-            if (!url) return '';
-            if (url.includes('youtube.com/watch?v=')) return url.replace('watch?v=', 'embed/');
-            if (url.includes('youtu.be/')) return url.replace('youtu.be/', 'youtube.com/embed/');
-            if (url.includes('drive.google.com') && url.includes('/view')) return url.replace('/view', '/preview');
+        window.getThumb = (manualUrl, videoUrl) => {
+            if(manualUrl && manualUrl.length > 5) return `<img src="${manualUrl}">`;
+            const ytid = window.extractYouTubeID(videoUrl);
+            if(ytid) return `<img src="https://img.youtube.com/vi/${ytid}/hqdefault.jpg">`;
+            return `<img src="https://placehold.co/600x400/333/999?text=No+Thumbnail">`;
+        };
+
+        window.getVideoEmbed = (url) => {
+            const ytid = window.extractYouTubeID(url);
+            if(ytid) return `https://www.youtube.com/embed/${ytid}?autoplay=1`;
+            if(url.includes('drive.google.com')) return url.replace('/view', '/preview');
             return url;
         };
 
-        window.getAvatarHTML = (pic, name) => {
+        window.getAvatar = (pic, name) => {
             if(pic) return `<img src="${pic}">`;
             return (name ? name.charAt(0).toUpperCase() : 'U');
         };
 
-        // --- UI ---
+        // --- UI LOGIC ---
         window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
         window.openModal = (id) => document.getElementById(id).style.display = 'flex';
         window.closeModals = () => document.querySelectorAll('.modal-bg').forEach(e => e.style.display = 'none');
         
-        window.toggleUserMenu = () => {
-            const menu = document.getElementById('userMenu');
-            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        window.toggleProfile = () => {
+            const el = document.getElementById('profileMenu');
+            el.classList.toggle('show');
+            document.getElementById('notifDropdown').style.display = 'none'; // Close notif
         };
 
         window.nav = (view, catFilter = null) => {
             ['homeView', 'playerView', 'listView', 'studioView'].forEach(id => document.getElementById(id).style.display = 'none');
             document.querySelectorAll('.side-item').forEach(el => el.classList.remove('active'));
             if(catFilter) document.getElementById('nav-'+catFilter)?.classList.add('active');
-            else if (view === 'history') document.getElementById('nav-history').classList.add('active');
-            else if (view === 'liked') document.getElementById('nav-liked').classList.add('active');
-            else if (view === 'studio') document.getElementById('nav-studio').classList.add('active');
+            else if (view==='history') document.getElementById('nav-history').classList.add('active');
+            else if (view==='liked') document.getElementById('nav-liked').classList.add('active');
+            else if (view==='studio') document.getElementById('nav-studio').classList.add('active');
 
             if(view === 'home') {
                 document.getElementById('homeView').style.display = 'block';
-                document.getElementById('pFrame').innerHTML = '';
+                document.getElementById('pFrame').innerHTML = ''; 
                 if(catFilter) window.filter(catFilter);
-            } 
-            else if(view === 'player') document.getElementById('playerView').style.display = 'block';
-            else if(view === 'history') {
+            } else if (view === 'player') {
+                document.getElementById('playerView').style.display = 'block';
+            } else if (view === 'history' || view === 'liked') {
                 document.getElementById('listView').style.display = 'block';
-                document.getElementById('listTitle').innerText = "History";
-                loadList('sya_hist');
-            }
-            else if(view === 'liked') {
-                document.getElementById('listView').style.display = 'block';
-                document.getElementById('listTitle').innerText = "Liked Videos";
-                loadList('sya_likes');
-            }
-            else if(view === 'studio') {
-                if(!currentUser) return window.showToast("Sign in first");
+                document.getElementById('listTitle').innerText = view === 'history' ? "History" : "Liked Videos";
+                loadList(view === 'history' ? 'sya_hist' : 'sya_likes');
+            } else if (view === 'studio') {
+                if(!currentUser) return window.showToast("Sign in required");
                 document.getElementById('studioView').style.display = 'block';
                 loadStudio();
             }
-            document.getElementById('userMenu').style.display = 'none';
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('profileMenu').classList.remove('show');
+            document.getElementById('notifDropdown').style.display = 'none';
         };
 
         // --- DATA ---
@@ -424,7 +482,6 @@ const firebaseConfig = {
             allVideos = [];
             if(data) Object.entries(data).forEach(([k,v]) => allVideos.push({id:k, ...v}));
             allVideos.reverse();
-            // Refresh current view logic if on home
             if(document.getElementById('homeView').style.display === 'block') window.filter('All');
         });
 
@@ -437,51 +494,42 @@ const firebaseConfig = {
             grid.innerHTML = '';
             
             const list = cat === 'All' ? allVideos : allVideos.filter(v => v.category === cat);
-            if(list.length === 0) grid.innerHTML = '<div style="padding:20px; color:#666">No videos found.</div>';
+            if(list.length === 0) grid.innerHTML = '<div style="color:#666; padding:20px;">No videos found</div>';
 
             list.forEach(v => {
                 grid.innerHTML += `
                     <div class="video-card" onclick="window.playVid('${v.id}')">
-                        <div class="thumb-box">${window.getThumbHTML(v.thumbnail, v.url)}</div>
+                        <div class="thumb-box">${window.getThumb(v.thumbnail, v.url)}</div>
                         <div class="meta">
-                            <div class="avatar-circle">${window.getAvatarHTML(v.uploaderPic, v.uploader)}</div>
+                            <div class="avatar-circle">${window.getAvatar(v.uploaderPic, v.uploader)}</div>
                             <div class="info"><h3>${v.title}</h3><p>${v.uploader} • ${v.views||0} views</p></div>
                         </div>
                     </div>`;
             });
         };
 
-        // --- PLAYER (Views + History Fix) ---
+        // --- PLAYER ---
         window.playVid = (id) => {
             const v = allVideos.find(x => x.id === id);
             if(!v) return;
             currentVideoId = id;
 
-            // 1. GENUINE VIEW COUNT (Updates Firebase Instantly)
-            runTransaction(ref(db, `videos/${id}/views`), (currentViews) => {
-                return (currentViews || 0) + 1;
-            });
+            // Update Views (Transaction)
+            runTransaction(ref(db, `videos/${id}/views`), (current) => (current || 0) + 1);
 
-            // 2. HISTORY SAVING (Fixed)
+            // Save History
             let h = JSON.parse(localStorage.getItem('sya_hist')||'[]');
-            // Store minimal data to avoid quota errors, but include fallback logic
-            const minimalVid = {
-                id: v.id, title: v.title, url: v.url, thumbnail: v.thumbnail, uploader: v.uploader, views: v.views
-            };
-            h = h.filter(x=>x.id!==id); 
-            h.unshift(minimalVid);
+            h = h.filter(x=>x.id!==id); h.unshift(v);
             localStorage.setItem('sya_hist', JSON.stringify(h));
 
-            // 3. UI
             window.nav('player');
-            const embedUrl = window.parseVideoUrl(v.url);
-            document.getElementById('pFrame').innerHTML = `<iframe src="${embedUrl}" allowfullscreen allow="autoplay"></iframe>`;
+            document.getElementById('pFrame').innerHTML = `<iframe src="${window.getVideoEmbed(v.url)}" allowfullscreen allow="autoplay"></iframe>`;
             document.getElementById('pTitle').innerText = v.title;
             document.getElementById('pUser').innerText = v.uploader;
             document.getElementById('pMeta').innerText = `${(v.views||0)+1} Views • ${v.category}`;
             document.getElementById('pDesc').innerText = v.description;
             document.getElementById('pLikes').innerText = v.likes || 0;
-            document.getElementById('pAvatar').innerHTML = window.getAvatarHTML(v.uploaderPic, v.uploader);
+            document.getElementById('pAvatar').innerHTML = window.getAvatar(v.uploaderPic, v.uploader);
             loadComments(id);
         };
 
@@ -498,13 +546,11 @@ const firebaseConfig = {
             currentUser = user;
             const area = document.getElementById('authBtnArea');
             if(user) {
-                area.innerHTML = `
-                    <div class="avatar-circle" onclick="window.toggleUserMenu()" title="Profile">
-                        ${window.getAvatarHTML(user.photoURL, user.email)}
-                    </div>`;
-                document.getElementById('menuEmail').innerText = user.email;
+                area.innerHTML = `<div class="avatar-circle" onclick="window.toggleProfile()">${window.getAvatar(user.photoURL, user.email)}</div>`;
+                document.getElementById('menuName').innerText = user.displayName || user.email;
+                document.getElementById('menuAvatar').innerHTML = window.getAvatar(user.photoURL, user.email);
                 closeModals();
-                window.showToast("Welcome back!");
+                window.addNotification("Welcome back, " + (user.displayName || "User"));
             } else {
                 area.innerHTML = `<button class="btn-main" style="padding:6px 12px;" onclick="openModal('authModal')">Sign In</button>`;
             }
@@ -525,30 +571,29 @@ const firebaseConfig = {
                 views: 0, likes: 0, date: Date.now()
             });
             window.closeModals();
-            window.showToast("Video Uploaded!");
+            window.showToast("Uploaded successfully!");
+            window.addNotification("Video Uploaded: " + document.getElementById('uTitle').value);
         };
 
-        // --- STUDIO (Analytics Fix) ---
+        // --- STUDIO ---
         function loadStudio() {
             const list = document.getElementById('studioList');
             list.innerHTML = '';
-            // Match videos by email
             const myVids = allVideos.filter(v => v.uploaderEmail === currentUser.email);
             let total = 0;
-            
-            // Chart Data
-            const labels = [];
-            const dataPoints = [];
+            const labels = [], data = [];
+
+            // DESTROY OLD CHART TO FIX ERROR
+            if(window.myChart) { window.myChart.destroy(); window.myChart = null; }
 
             myVids.forEach(v => {
                 total += (v.views||0);
-                labels.push(v.title.substring(0, 10));
-                dataPoints.push(v.views||0);
-
+                labels.push(v.title.substring(0,10));
+                data.push(v.views||0);
                 list.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:#222; padding:10px; margin-bottom:10px; border-radius:8px;">
+                    <div style="background:#222; padding:10px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <div style="width:60px; height:34px; background:#000; overflow:hidden; border-radius:4px;">${window.getThumbHTML(v.thumbnail, v.url)}</div>
+                            <div style="width:60px; height:34px; background:#000; overflow:hidden; border-radius:4px;">${window.getThumb(v.thumbnail, v.url)}</div>
                             <div style="font-weight:bold; font-size:14px;">${v.title}</div>
                         </div>
                         <div style="display:flex; gap:15px; align-items:center;">
@@ -558,57 +603,23 @@ const firebaseConfig = {
                     </div>`;
             });
             document.getElementById('sTotalViews').innerText = total;
-
-            // Render Chart
+            
+            // Create Chart
             const ctx = document.getElementById('studioChart').getContext('2d');
-            if(window.myChart) window.myChart.destroy();
             window.myChart = new Chart(ctx, {
                 type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Views', data: dataPoints, backgroundColor: '#6366f1' }] },
-                options: { responsive: true, scales: { y: { beginAtZero: true, grid: { color: '#333' } }, x: { display: false } } }
+                data: { labels: labels, datasets: [{ label: 'Views', data: data, backgroundColor: '#6366f1' }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true, grid: {color:'#333'} }, x:{display:false} } }
             });
         }
 
         window.delVid = (id) => {
-            if(confirm("Delete?")) { remove(ref(db, `videos/${id}`)); setTimeout(loadStudio, 500); window.showToast("Video Deleted"); }
+            if(confirm("Delete video?")) { remove(ref(db, `videos/${id}`)); setTimeout(loadStudio, 500); window.showToast("Deleted"); }
         };
 
-        // --- LIKES & HISTORY UI ---
-        window.loadList = (key) => {
-            const data = JSON.parse(localStorage.getItem(key)||'[]');
-            const grid = document.getElementById('listGrid');
-            grid.innerHTML = '';
-            if(data.length===0) grid.innerHTML = '<div style="color:#666; padding:20px;">Nothing here yet.</div>';
-            data.forEach(v => {
-                grid.innerHTML += `
-                    <div class="video-card" onclick="window.playVid('${v.id}')">
-                        <div class="thumb-box">${window.getThumbHTML(v.thumbnail, v.url)}</div>
-                        <div class="meta">
-                            <div class="info"><h3>${v.title}</h3><p>${v.uploader}</p></div>
-                        </div>
-                    </div>`;
-            });
-        };
-
-        window.handleLike = () => {
-            if(!currentVideoId) return;
-            let l = JSON.parse(localStorage.getItem('sya_likes')||'[]');
-            const v = allVideos.find(x=>x.id===currentVideoId);
-            const minV = { id: v.id, title: v.title, url: v.url, thumbnail: v.thumbnail, uploader: v.uploader };
-            
-            if(l.find(x=>x.id===currentVideoId)) { 
-                l = l.filter(x=>x.id!==currentVideoId); 
-                window.showToast("Removed from Liked");
-            } else { 
-                l.unshift(minV); 
-                window.showToast("Added to Liked Videos"); 
-            }
-            localStorage.setItem('sya_likes', JSON.stringify(l));
-        };
-
-        // --- COMMENTS ---
+        // --- COMMENTS & LIKES ---
         window.postComment = () => {
-            if(!currentUser) return window.showToast("Sign in to comment");
+            if(!currentUser) return window.showToast("Sign in required");
             const t = document.getElementById('comInp').value;
             if(t) {
                 push(ref(db, `comments/${currentVideoId}`), { user:currentUser.displayName||'User', text:t, pic:currentUser.photoURL });
@@ -623,10 +634,33 @@ const firebaseConfig = {
                 l.innerHTML = '';
                 const d = s.val();
                 if(d) Object.values(d).forEach(c => {
-                    l.innerHTML += `<div style="display:flex; gap:10px; margin-bottom:15px;"><div class="avatar-circle" style="width:28px; height:28px; font-size:10px;">${window.getAvatarHTML(c.pic, c.user)}</div><div><div style="font-weight:bold; font-size:12px; color:#ccc;">${c.user}</div><div style="font-size:14px;">${c.text}</div></div></div>`;
+                    l.innerHTML += `<div style="display:flex; gap:10px; margin-bottom:15px;"><div class="avatar-circle" style="width:28px; height:28px; font-size:10px;">${window.getAvatar(c.pic, c.user)}</div><div><div style="font-weight:bold; font-size:12px; color:#ccc;">${c.user}</div><div style="font-size:14px;">${c.text}</div></div></div>`;
                 });
             });
         }
+
+        window.handleLike = () => {
+            if(!currentVideoId) return;
+            let l = JSON.parse(localStorage.getItem('sya_likes')||'[]');
+            const v = allVideos.find(x=>x.id===currentVideoId);
+            if(l.find(x=>x.id===currentVideoId)) { l = l.filter(x=>x.id!==currentVideoId); window.showToast("Unliked"); }
+            else { l.unshift(v); window.showToast("Liked"); }
+            localStorage.setItem('sya_likes', JSON.stringify(l));
+        };
+
+        window.loadList = (key) => {
+            const d = JSON.parse(localStorage.getItem(key)||'[]');
+            const g = document.getElementById('listGrid');
+            g.innerHTML = '';
+            if(d.length===0) g.innerHTML = '<div style="color:#666; padding:20px;">Nothing here.</div>';
+            d.forEach(v => {
+                g.innerHTML += `
+                    <div class="video-card" onclick="window.playVid('${v.id}')">
+                        <div class="thumb-box">${window.getThumb(v.thumbnail, v.url)}</div>
+                        <div class="meta"><div class="info"><h3>${v.title}</h3></div></div>
+                    </div>`;
+            });
+        };
 
         window.nav('home');
     </script>
