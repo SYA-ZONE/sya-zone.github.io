@@ -3,362 +3,644 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questro - AI Problem Solver</title>
+    <title>SyaZone</title>
+    
+    <!-- SPEED: Preconnect to external servers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Fonts & Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        /* --- Premium Dark Theme & General Styling --- */
         :root {
-            --primary-bg: #1a1a2e;
-            --secondary-bg: #16213e;
-            --card-bg: #0f3460;
-            --text-color: #e3e3e3;
-            --accent-color: #50e3c2;
-            --accent-hover: #48cfae;
-            --border-color: #2c3e50;
-            --error-color: #e74c3c;
-            --font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-            --border-radius: 12px;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --bg: #0f0f0f;
+            --surface: #1f1f1f;
+            --hover: #2d2d2d;
+            --text: #ffffff;
+            --text-gray: #aaaaaa;
+            --accent: #6366f1;
+            --border: #303030;
+            --red: #cc0000;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
+
+        /* --- SKELETON LOADING (SPEED ANIMATION) --- */
+        .skeleton {
+            background: #222;
+            background: linear-gradient(90deg, #222 25%, #2a2a2a 50%, #222 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 4px;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
-        body {
-            font-family: var(--font-family);
-            background-color: var(--primary-bg);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .main-layout {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 20px;
-            width: 100%;
-            max-width: 1050px;
+        /* --- Header --- */
+        header {
+            position: fixed; top: 0; left: 0; right: 0; height: 60px;
+            background: rgba(15,15,15,0.98); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; z-index: 100;
+            will-change: transform; /* Performance Hint */
         }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--secondary-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            padding: 30px;
-            border: 1px solid var(--border-color);
+        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .logo i { color: var(--accent); font-size: 26px; }
+
+        .search-box {
+            display: flex; align-items: center; background: #121212;
+            border: 1px solid var(--border); border-radius: 40px;
+            width: 100%; max-width: 500px; height: 40px; margin: 0 10px;
+        }
+        .search-box input {
+            background: transparent; border: none; color: #fff; width: 100%;
+            padding: 0 16px; outline: none; font-size: 16px;
+        }
+        .menu-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 8px; position: relative; }
+
+        /* --- Notifications --- */
+        .notif-badge {
+            position: absolute; top: 4px; right: 4px;
+            background-color: var(--red); color: white;
+            font-size: 10px; font-weight: bold;
+            padding: 2px 5px; border-radius: 10px;
+            border: 2px solid var(--bg);
+            display: none;
         }
 
-        .side-ad-container {
-            width: 160px;
-            height: 600px;
-            margin-top: 30px; 
-            flex-shrink: 0;
+        .notif-dropdown {
+            position: absolute; top: 50px; right: 60px; width: 300px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: none; flex-direction: column; z-index: 200;
+            max-height: 400px; overflow-y: auto;
         }
         
-        .banner-ad-container {
-            margin-top: 30px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
+        .notif-item { padding: 12px; border-bottom: 1px solid #333; display: flex; gap: 10px; }
+        .notif-item:hover { background: var(--hover); }
+        .notif-text { font-size: 13px; line-height: 1.4; }
+        .notif-time { font-size: 11px; color: var(--text-gray); margin-top: 4px; }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed; top: 60px; left: 0; bottom: 0; width: 240px;
+            background: var(--bg); padding: 12px; overflow-y: auto; z-index: 90;
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
         }
-        
-        /* --- *** FINAL RESPONSIVE AD FIX *** --- */
-        .banner-ad-container iframe,
-        .banner-ad-container ins { /* Target both potential ad elements */
-            max-width: 100% !important; /* Force override of the ad script's fixed width */
-            width: 728px;               /* Set the ideal width */
-            height: auto;               /* Let height be calculated automatically */
-            aspect-ratio: 728 / 90;     /* Maintain the ad's shape as it shrinks */
-            border: none;
+        .side-item {
+            display: flex; align-items: center; padding: 10px 12px;
+            color: var(--text); text-decoration: none; border-radius: 10px;
+            margin-bottom: 4px; cursor: pointer;
         }
-        
-        /* All other app styles remain the same */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color); }
-        header h1 { color: var(--accent-color); font-size: 2.5rem; font-weight: 700; text-shadow: 0 0 10px rgba(80, 227, 194, 0.4); }
-        #history-btn { background: none; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: background-color 0.3s, color 0.3s; }
-        #history-btn:hover { background-color: var(--accent-color); color: var(--primary-bg); }
-        .input-area { margin-bottom: 25px; }
-        #question-input { width: 100%; min-height: 120px; padding: 15px; border-radius: var(--border-radius); border: 1px solid var(--border-color); background-color: var(--primary-bg); color: var(--text-color); font-size: 1rem; font-family: var(--font-family); resize: vertical; transition: border-color 0.3s, box-shadow 0.3s; }
-        #question-input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(80, 227, 194, 0.2); }
-        .file-upload-area { margin-top: 15px; display: flex; align-items: center; gap: 15px; }
-        #image-upload-label { padding: 12px 20px; background-color: var(--card-bg); color: var(--accent-color); border: 1px dashed var(--accent-color); border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
-        #image-upload-label:hover { background-color: #1b4a8b; }
-        #image-input { display: none; }
-        #image-preview-container { position: relative; }
-        #image-preview { max-height: 60px; border-radius: 8px; border: 1px solid var(--border-color); display: none; }
-        #remove-image-btn { position: absolute; top: -10px; right: -10px; background-color: var(--error-color); color: white; border: 2px solid var(--secondary-bg); border-radius: 50%; width: 24px; height: 24px; font-weight: bold; font-size: 14px; cursor: pointer; display: none; line-height: 20px; text-align: center; }
-        #submit-btn { display: block; width: 100%; padding: 15px; font-size: 1.2rem; font-weight: bold; color: var(--primary-bg); background: var(--accent-color); border: none; border-radius: 8px; cursor: pointer; margin-top: 20px; transition: background-color 0.3s, transform 0.2s; }
-        #submit-btn:hover:not(:disabled) { background-color: var(--accent-hover); transform: translateY(-2px); }
-        #submit-btn:disabled { background: #555; color: #999; cursor: not-allowed; }
-        h2 { color: var(--text-color); padding-bottom: 10px; margin-bottom: 15px; font-weight: 500; }
-        #answer-box { background-color: var(--primary-bg); border-radius: var(--border-radius); padding: 20px; min-height: 100px; line-height: 1.7; white-space: pre-wrap; word-wrap: break-word; border: 1px solid var(--border-color); }
-        #answer-box.error { color: var(--error-color); font-weight: bold; }
-        .loader { border: 5px solid #333; border-top: 5px solid var(--accent-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); }
-        .modal-content { background-color: var(--secondary-bg); margin: 5% auto; padding: 25px; border: 1px solid var(--border-color); border-radius: var(--border-radius); width: 90%; max-width: 700px; box-shadow: var(--shadow); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px; }
-        .modal-header h2 { margin: 0; color: var(--accent-color); }
-        .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close-btn:hover { color: var(--text-color); }
-        #history-controls { display: flex; gap: 10px; margin-bottom: 15px; }
-        #search-history { flex-grow: 1; padding: 10px; background-color: var(--primary-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); }
-        #clear-history-btn { padding: 10px 15px; background-color: var(--error-color); color: white; border: none; border-radius: 8px; cursor: pointer; }
-        #history-list .history-item { background-color: var(--primary-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; }
-        #history-list .history-item h4 { color: var(--accent-color); margin-bottom: 8px; }
-        #history-list .history-item p { white-space: pre-wrap; word-wrap: break-word; opacity: 0.9; }
-        #history-list .history-item small { display: block; margin-top: 10px; opacity: 0.6; text-align: right; }
-        .history-item-image { max-width: 100%; max-height: 250px; border-radius: 8px; margin-top: 15px; border: 1px solid var(--border-color); object-fit: contain; }
-        
-        @media (max-width: 1024px) {
-            .side-ad-container { display: none; }
-        }
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            .container { padding: 20px; }
-            header h1 { font-size: 2rem; }
-            .modal-content { width: 95%; margin: 10% auto;}
+        .side-item:hover { background: var(--surface); }
+        .side-item.active { background: #262626; font-weight: 600; }
+        .side-item i { width: 24px; font-size: 20px; margin-right: 20px; }
+
+        /* --- Main --- */
+        main {
+            margin-top: 60px; margin-left: 240px; padding: 24px;
+            min-height: 100vh; transition: 0.2s;
         }
 
+        /* --- Chips --- */
+        .chips-bar {
+            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px;
+            margin-bottom: 20px; border-bottom: 1px solid var(--border);
+        }
+        .chip {
+            background: #222; border: 1px solid var(--border); color: #fff;
+            padding: 6px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+            transition: 0.2s;
+        }
+        .chip:hover { background: #333; }
+        .chip.active { background: #fff; color: #000; font-weight: 500; }
+
+        /* --- Video Grid --- */
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px 16px;
+        }
+        .video-card { cursor: pointer; contain: content; /* Performance optimization */ }
+        
+        .thumb-box {
+            width: 100%; aspect-ratio: 16/9; background: #222; border-radius: 12px;
+            overflow: hidden; margin-bottom: 10px; position: relative;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .thumb-box img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.3s; }
+        .thumb-box img.loaded { opacity: 1; } /* Smooth fade in */
+        
+        .thumb-placeholder { color: #444; font-size: 40px; }
+        
+        .meta { display: flex; gap: 12px; }
+        .avatar-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--accent); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 14px; flex-shrink: 0; overflow: hidden;
+        }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .info h3 { font-size: 16px; margin-bottom: 4px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .info p { font-size: 13px; color: var(--text-gray); }
+
+        /* --- Player --- */
+        #playerView { display: none; max-width: 1100px; margin: 0 auto; }
+        .player-wrapper {
+            width: 100%; aspect-ratio: 16/9; background: #000;
+            border-radius: 12px; overflow: hidden; margin-bottom: 16px;
+        }
+        .player-wrapper iframe { width: 100%; height: 100%; border: none; }
+        .actions { display: flex; justify-content: space-between; margin-top: 10px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+        .btn-pill { background: var(--surface); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+        /* --- Modals --- */
+        .modal-bg {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); z-index: 200; display: none;
+            justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+        .modal { background: #1a1a1a; padding: 24px; border-radius: 12px; width: 400px; border: 1px solid var(--border); }
+        .inp { width: 100%; background: #0f0f0f; border: 1px solid #333; color: #fff; padding: 10px; margin-bottom: 10px; border-radius: 6px; }
+        .btn-main { width: 100%; background: var(--accent); color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            main { margin-left: 0; }
+        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="main-layout">
-        <!-- Main App Content -->
-        <div class="container">
-            <header>
-                <h1>Questro</h1>
-                <button id="history-btn">History</button>
-            </header>
-            <main>
-                <div class="input-area">
-                    <textarea id="question-input" placeholder="Ask a question or describe the image you upload..."></textarea>
-                    <div class="file-upload-area">
-                        <input type="file" id="image-input" accept="image/*">
-                        <label for="image-input" id="image-upload-label">Add Image</label>
-                        <div id="image-preview-container">
-                            <img id="image-preview" src="" alt="Image Preview">
-                            <button id="remove-image-btn">×</button>
+    <!-- HEADER -->
+    <header>
+        <div style="display:flex; align-items:center; gap:16px;">
+            <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="logo" onclick="nav('home')"><i class="fas fa-play-circle"></i> SyaZone</div>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInp" placeholder="Search..." oninput="searchVideos()">
+            <i class="fas fa-search" style="color:#aaa; margin-right:16px;"></i>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center; position: relative;">
+            <button class="menu-btn" onclick="openModal('uploadModal')"><i class="fas fa-video"></i></button>
+            
+            <!-- NOTIFICATION BELL -->
+            <button class="menu-btn" onclick="toggleNotif()">
+                <i class="fas fa-bell"></i>
+                <div id="notifBadge" class="notif-badge">0</div>
+            </button>
+            <!-- NOTIFICATION DROPDOWN -->
+            <div id="notifDropdown" class="notif-dropdown">
+                <div style="padding:15px; text-align:center; color:#666;">No Notifications</div>
+            </div>
+
+            <div id="authBtnArea">
+                <button class="btn-main" style="padding:6px 12px;" onclick="openModal('authModal')">Sign In</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="side-item active" onclick="nav('home', 'All')" id="nav-All"><i class="fas fa-home"></i> Home</div>
+        <div class="side-item" onclick="nav('home', 'Gaming')" id="nav-Gaming"><i class="fas fa-gamepad"></i> Gaming</div>
+        <div class="side-item" onclick="nav('home', 'Music')" id="nav-Music"><i class="fas fa-music"></i> Music</div>
+        <div class="side-item" onclick="nav('home', 'Tech')" id="nav-Tech"><i class="fas fa-microchip"></i> Tech</div>
+        <div class="side-item" onclick="nav('home', 'Coding')" id="nav-Coding"><i class="fas fa-code"></i> Coding</div>
+        <hr style="border-color:#333; margin:10px 0;">
+        <div class="side-item" onclick="nav('history')"><i class="fas fa-history"></i> History</div>
+        <div class="side-item" onclick="nav('liked')"><i class="fas fa-thumbs-up"></i> Liked Videos</div>
+        <div class="side-item" onclick="nav('studio')"><i class="fas fa-sliders-h"></i> Studio</div>
+    </nav>
+
+    <!-- MAIN -->
+    <main>
+        <!-- Home View -->
+        <div id="homeView">
+            <div class="chips-bar">
+                <div class="chip active" onclick="filter('All')">All</div>
+                <div class="chip" onclick="filter('Gaming')">Gaming</div>
+                <div class="chip" onclick="filter('Music')">Music</div>
+                <div class="chip" onclick="filter('Tech')">Tech</div>
+                <div class="chip" onclick="filter('Coding')">Coding</div>
+            </div>
+            <div class="grid" id="videoGrid">
+                <!-- Skeleton Loader will appear here first -->
+            </div>
+        </div>
+
+        <!-- Player View -->
+        <div id="playerView">
+            <button onclick="nav('home')" style="background:none; border:none; color:#aaa; margin-bottom:10px; cursor:pointer;"><i class="fas fa-arrow-left"></i> Back</button>
+            <div class="player-wrapper" id="pFrame"></div>
+            <h1 id="pTitle" style="font-size:20px; margin-top:10px;">Title</h1>
+            <div class="actions">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div id="pAvatar" class="avatar-circle"></div>
+                    <div>
+                        <div id="pUser" style="font-weight:bold;">User</div>
+                        <div style="font-size:12px; color:#aaa;">1.5K Subs</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-pill" onclick="handleLike()"><i class="fas fa-thumbs-up"></i> <span id="pLikes">0</span></button>
+                    <button class="btn-pill"><i class="fas fa-share"></i> Share</button>
+                </div>
+            </div>
+            <div style="background:#222; padding:15px; border-radius:10px; margin-top:15px;">
+                <div id="pMeta" style="font-weight:bold; font-size:13px; margin-bottom:5px;"></div>
+                <div id="pDesc" style="color:#ddd; font-size:14px;"></div>
+            </div>
+            <h3 style="margin-top:20px;">Comments</h3>
+            <div id="commentsList" style="margin-top:15px;"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <input type="text" id="comInp" class="inp" style="margin:0;" placeholder="Add a comment...">
+                <button class="btn-main" onclick="postComment()" style="width:auto;">Post</button>
+            </div>
+        </div>
+
+        <!-- List View -->
+        <div id="listView" class="hidden">
+            <h2 id="listTitle" style="margin-bottom:20px;">History</h2>
+            <div class="grid" id="listGrid"></div>
+        </div>
+
+        <!-- Studio View -->
+        <div id="studioView" class="hidden">
+            <h1>Channel Studio</h1>
+            <div style="margin:20px 0; background:#1f1f1f; padding:20px; border-radius:10px;">
+                <h2 id="sTotalViews">0 Views</h2>
+                <p style="color:#aaa;">Total Channel Views</p>
+            </div>
+            <h3>Your Videos</h3>
+            <div id="studioList" style="margin-top:15px;"></div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div id="authModal" class="modal-bg">
+        <div class="modal">
+            <h2>Sign In</h2>
+            <input type="email" id="em" class="inp" placeholder="Email">
+            <input type="password" id="pw" class="inp" placeholder="Password">
+            <button class="btn-main" onclick="emailAuth()">Login / Create Account</button>
+            <div style="text-align:center; margin:10px; color:#aaa;">or</div>
+            <button class="btn-main" style="background:#fff; color:#000;" onclick="googleAuth()">Google Login</button>
+            <button style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer;" onclick="closeModals()">Cancel</button>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal-bg">
+        <div class="modal">
+            <h2>Upload Video</h2>
+            <input type="text" id="uTitle" class="inp" placeholder="Title">
+            <select id="uCat" class="inp">
+                <option value="Gaming">Gaming</option>
+                <option value="Music">Music</option>
+                <option value="Tech">Tech</option>
+                <option value="Coding">Coding</option>
+            </select>
+            <input type="text" id="uThumb" class="inp" placeholder="Thumbnail URL (ImgBB)">
+            <input type="text" id="uUrl" class="inp" placeholder="Video URL (YouTube)">
+            <input type="text" id="uDesc" class="inp" placeholder="Description">
+            <button class="btn-main" onclick="uploadVideo()">Upload</button>
+            <button style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer;" onclick="closeModals()">Cancel</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, push, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // --- PASTE FIREBASE CONFIG HERE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyC88eS8DUWMXqoQH-TsynbUEHpI6sMSb1M",
+  authDomain: "sya-zone-8e4ff.firebaseapp.com",
+  databaseURL: "https://sya-zone-8e4ff-default-rtdb.firebaseio.com",
+  projectId: "sya-zone-8e4ff",
+  storageBucket: "sya-zone-8e4ff.firebasestorage.app",
+  messagingSenderId: "753157195554",
+  appId: "1:753157195554:web:051d36b6a31ae51245877b"
+};
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getDatabase(app);
+        } catch(e) { console.error("Firebase Config Missing"); }
+
+        const provider = new GoogleAuthProvider();
+        let currentUser = null;
+        let allVideos = [];
+        let currentVideoId = null;
+        let notifications = [];
+        let unreadCount = 0;
+
+        // --- PERF: Skeleton Loader ---
+        function showSkeleton() {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+            // Create 8 dummy skeleton cards
+            for(let i=0; i<8; i++) {
+                grid.innerHTML += `
+                    <div class="video-card">
+                        <div class="skeleton" style="width:100%; aspect-ratio:16/9; margin-bottom:10px;"></div>
+                        <div style="display:flex; gap:12px;">
+                            <div class="skeleton" style="width:36px; height:36px; border-radius:50%;"></div>
+                            <div style="flex:1">
+                                <div class="skeleton" style="width:80%; height:16px; margin-bottom:6px;"></div>
+                                <div class="skeleton" style="width:50%; height:14px;"></div>
+                            </div>
                         </div>
                     </div>
-                    <button id="submit-btn">Get Answer</button>
-                </div>
-                <div class="response-area">
-                    <h2>Answer</h2>
-                    <div id="loader" class="loader"></div>
-                    <div id="answer-box">Your answer will appear here...</div>
-                </div>
-
-                <!-- Banner Ad Container -->
-                <div class="banner-ad-container">
-                    <script type="text/javascript">
-                        atOptions = {
-                            'key' : '3c8de023f8d3a894553c08b9082dbcaa',
-                            'format' : 'iframe',
-                            'height' : 90,
-                            'width' : 728,
-                            'params' : {}
-                        };
-                    </script>
-                    <script type="text/javascript" src="//www.highperformanceformat.com/3c8de023f8d3a894553c08b9082dbcaa/invoke.js"></script>
-                </div>
-            </main>
-        </div>
-
-        <!-- Side Ad Container (Only visible on desktop) -->
-        <div class="side-ad-container">
-            <script type="text/javascript">
-                atOptions = {
-                    'key' : '365db495187c018a54be0380ae07be56',
-                    'format' : 'iframe',
-                    'height' : 600,
-                    'width' : 160,
-                    'params' : {}
-                };
-            </script>
-            <script type="text/javascript" src="//www.highperformanceformat.com/365db495187c018a54be0380ae07be56/invoke.js"></script>
-        </div>
-    </div>
-    
-    <!-- History Modal (No Change) -->
-    <div id="history-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>History</h2>
-                <span class="close-btn">×</span>
-            </div>
-            <div id="history-controls">
-                <input type="text" id="search-history" placeholder="Search in history...">
-                <button id="clear-history-btn">Clear All</button>
-            </div>
-            <div id="history-list"></div>
-        </div>
-    </div>
-
-    <script>
-        // The JavaScript for the app functionality remains exactly the same.
-        const questionInput = document.getElementById('question-input');
-        const submitBtn = document.getElementById('submit-btn');
-        const loader = document.getElementById('loader');
-        const answerBox = document.getElementById('answer-box');
-        const imageInput = document.getElementById('image-input');
-        const imagePreview = document.getElementById('image-preview');
-        const removeImageBtn = document.getElementById('remove-image-btn');
-        const historyBtn = document.getElementById('history-btn');
-        const historyModal = document.getElementById('history-modal');
-        const closeModalBtn = document.querySelector('.close-btn');
-        const historyList = document.getElementById('history-list');
-        const clearHistoryBtn = document.getElementById('clear-history-btn');
-        const searchHistoryInput = document.getElementById('search-history');
-
-        let imageData = null;
-        let imageDataUrl = null;
-        let history = [];
-
-        const API_KEY = 'AIzaSyDrEc4H6kALW4ZDgxM82pMiEaQrV3AkEtg';
-        const MODEL_NAME = 'gemini-1.5-flash';
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
-
-        submitBtn.addEventListener('click', getAnswer);
-        imageInput.addEventListener('change', handleImageUpload);
-        removeImageBtn.addEventListener('click', resetImage);
-        historyBtn.addEventListener('click', openHistoryModal);
-        closeModalBtn.addEventListener('click', () => historyModal.style.display = 'none');
-        window.addEventListener('click', (event) => {
-            if (event.target == historyModal) {
-                historyModal.style.display = 'none';
+                `;
             }
-        });
-        clearHistoryBtn.addEventListener('click', clearHistory);
-        searchHistoryInput.addEventListener('input', (e) => displayHistory(e.target.value));
-
-        document.addEventListener('DOMContentLoaded', loadHistory);
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) { resetImage(); return; }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result.split(',')[1];
-                imageData = { mimeType: file.type, data: base64String };
-                imageDataUrl = reader.result;
-                imagePreview.src = reader.result;
-                imagePreview.style.display = 'block';
-                removeImageBtn.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
         }
+        // Show skeleton immediately on load
+        showSkeleton();
 
-        function resetImage() {
-            imageInput.value = '';
-            imagePreview.src = '';
-            imagePreview.style.display = 'none';
-            removeImageBtn.style.display = 'none';
-            imageData = null;
-            imageDataUrl = null;
-        }
+        // --- HELPERS (Link Fixes & Fallbacks) ---
+        window.parseVideoUrl = (url) => {
+            if (!url) return '';
+            if (url.includes('youtube.com/watch?v=')) return url.replace('watch?v=', 'embed/');
+            if (url.includes('youtu.be/')) return url.replace('youtu.be/', 'youtube.com/embed/');
+            if (url.includes('drive.google.com') && url.includes('/view')) return url.replace('/view', '/preview');
+            return url;
+        };
 
-        async function getAnswer() {
-            const userQuestion = questionInput.value.trim();
-            if (!userQuestion && !imageData) { showError('Please enter a question or upload an image.'); return; }
-            setLoadingState(true);
-            const parts = [];
-            if (userQuestion) { parts.push({ text: userQuestion }); }
-            if (imageData) { parts.push({ inline_data: { mime_type: imageData.mimeType, data: imageData.data } }); }
+        window.getThumbHTML = (url) => {
+            if(url && url.length > 5) return `<img src="${url}" loading="lazy" onload="this.classList.add('loaded')" onerror="this.parentElement.innerHTML='<div class=\'thumb-placeholder\'><i class=\'fas fa-image\'></i></div>'">`;
+            return `<div class="thumb-placeholder"><i class="fas fa-image"></i></div>`;
+        };
+
+        window.getAvatarHTML = (pic, name) => {
+            if(pic) return `<img src="${pic}">`;
+            return (name ? name.charAt(0).toUpperCase() : 'U');
+        };
+
+        // --- NOTIFICATION LOGIC (FIXED) ---
+        window.addNotification = (text) => {
+            notifications.unshift({ text: text, time: 'Just now' });
+            unreadCount++;
             
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts }] })
-                });
-                const data = await response.json();
-                if (!response.ok) { throw new Error(data?.error?.message || `API Error: ${response.status}`); }
-                if (!data.candidates || data.candidates.length === 0) { showError('The AI did not return a response due to a safety block. Please try a different prompt or image.'); return; }
-                const aiResponseText = data.candidates[0].content.parts[0].text;
-                answerBox.classList.remove('error');
-                answerBox.textContent = aiResponseText;
-                saveToHistory(userQuestion, aiResponseText, imageDataUrl);
-            } catch (error) {
-                console.error('Error fetching AI response:', error);
-                showError(`An error occurred: ${error.message}. Please check your Google Cloud project's billing and API settings.`);
-            } finally {
-                setLoadingState(false);
-                resetImage();
+            const badge = document.getElementById('notifBadge');
+            badge.innerText = unreadCount;
+            badge.style.display = 'block'; 
+            
+            renderNotifDropdown();
+        };
+
+        function renderNotifDropdown() {
+            const dd = document.getElementById('notifDropdown');
+            if (notifications.length === 0) {
+                dd.innerHTML = '<div style="padding:15px; text-align:center; color:#666;">No Notifications</div>';
+                return;
             }
-        }
-
-        function setLoadingState(isLoading) {
-            loader.style.display = isLoading ? 'block' : 'none';
-            submitBtn.disabled = isLoading;
-            if (isLoading) { answerBox.textContent = ''; answerBox.classList.remove('error'); }
-        }
-
-        function showError(message) {
-            answerBox.textContent = message;
-            answerBox.classList.add('error');
-        }
-        
-        function loadHistory() {
-            const storedHistory = localStorage.getItem('questroHistory');
-            if (storedHistory) { history = JSON.parse(storedHistory); }
-        }
-
-        function saveToHistory(question, answer, imageUrl) {
-            const timestamp = new Date().toISOString();
-            const historyItem = { question, answer, timestamp, image: imageUrl };
-            history.unshift(historyItem);
-            localStorage.setItem('questroHistory', JSON.stringify(history));
-        }
-
-        function openHistoryModal() {
-            displayHistory();
-            historyModal.style.display = 'block';
-        }
-
-        function displayHistory(searchTerm = '') {
-            historyList.innerHTML = '';
-            if (history.length === 0) { historyList.innerHTML = '<p>No history yet. Ask a question to get started!</p>'; return; }
-            const filteredHistory = history.filter(item => (item.question && item.question.toLowerCase().includes(searchTerm.toLowerCase())) || (item.answer && item.answer.toLowerCase().includes(searchTerm.toLowerCase())));
-            if (filteredHistory.length === 0) { historyList.innerHTML = '<p>No history items match your search.</p>'; return; }
-            filteredHistory.forEach(item => {
-                const itemEl = document.createElement('div');
-                itemEl.className = 'history-item';
-                if (item.image) {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = item.image;
-                    imgEl.className = 'history-item-image';
-                    itemEl.appendChild(imgEl);
-                }
-                const questionEl = document.createElement('h4');
-                questionEl.textContent = 'Q: ' + (item.question || "[Image-based question]");
-                const answerEl = document.createElement('p');
-                answerEl.textContent = 'A: ' + item.answer;
-                const timeEl = document.createElement('small');
-                timeEl.textContent = new Date(item.timestamp).toLocaleString();
-                itemEl.appendChild(questionEl);
-                itemEl.appendChild(answerEl);
-                itemEl.appendChild(timeEl);
-                historyList.appendChild(itemEl);
+            dd.innerHTML = '';
+            notifications.forEach(n => {
+                dd.innerHTML += `
+                    <div class="notif-item">
+                        <div style="background:var(--accent); width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0;"></div>
+                        <div>
+                            <div class="notif-text">${n.text}</div>
+                            <div class="notif-time">${n.time}</div>
+                        </div>
+                    </div>
+                `;
             });
         }
-        
-        function clearHistory() {
-            if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
-                history = [];
-                localStorage.removeItem('questroHistory');
-                displayHistory();
+
+        window.toggleNotif = () => {
+            const dd = document.getElementById('notifDropdown');
+            const badge = document.getElementById('notifBadge');
+            
+            if (dd.style.display === 'flex') {
+                dd.style.display = 'none';
+            } else {
+                dd.style.display = 'flex';
+                // RESET COUNT & HIDE BADGE
+                unreadCount = 0;
+                badge.style.display = 'none';
             }
+        };
+
+        // --- UI NAVIGATION ---
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
+        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
+        window.closeModals = () => document.querySelectorAll('.modal-bg').forEach(e => e.style.display = 'none');
+
+        window.nav = (view, catFilter = null) => {
+            ['homeView', 'playerView', 'listView', 'studioView'].forEach(id => document.getElementById(id).style.display = 'none');
+            document.querySelectorAll('.side-item').forEach(el => el.classList.remove('active'));
+            if(catFilter) document.getElementById('nav-'+catFilter)?.classList.add('active');
+
+            if(view === 'home') {
+                document.getElementById('homeView').style.display = 'block';
+                document.getElementById('pFrame').innerHTML = '';
+                if(catFilter) window.filter(catFilter);
+            } 
+            else if(view === 'player') document.getElementById('playerView').style.display = 'block';
+            else if(view === 'history') {
+                document.getElementById('listView').style.display = 'block';
+                document.getElementById('listTitle').innerText = "History";
+                loadList('sya_hist');
+            }
+            else if(view === 'liked') {
+                document.getElementById('listView').style.display = 'block';
+                document.getElementById('listTitle').innerText = "Liked Videos";
+                loadList('sya_likes');
+            }
+            else if(view === 'studio') {
+                if(!currentUser) return alert("Sign in first");
+                document.getElementById('studioView').style.display = 'block';
+                loadStudio();
+            }
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('notifDropdown').style.display = 'none';
+        };
+
+        // --- DATA ---
+        onValue(ref(db, 'videos'), snap => {
+            const data = snap.val();
+            allVideos = [];
+            if(data) Object.entries(data).forEach(([k,v]) => allVideos.push({id:k, ...v}));
+            allVideos.reverse();
+            window.filter('All');
+        });
+
+        window.filter = (cat) => {
+            document.querySelectorAll('.chip').forEach(c => {
+                c.classList.remove('active');
+                if(c.innerText === cat) c.classList.add('active');
+            });
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+            
+            const list = cat === 'All' ? allVideos : allVideos.filter(v => v.category === cat);
+            
+            if(list.length === 0) grid.innerHTML = '<div style="padding:20px; color:#666">No videos found.</div>';
+
+            list.forEach(v => {
+                grid.innerHTML += `
+                    <div class="video-card" onclick="window.playVid('${v.id}')">
+                        <div class="thumb-box">${window.getThumbHTML(v.thumbnail)}</div>
+                        <div class="meta">
+                            <div class="avatar-circle">${window.getAvatarHTML(v.uploaderPic, v.uploader)}</div>
+                            <div class="info"><h3>${v.title}</h3><p>${v.uploader} • ${v.views||0} views</p></div>
+                        </div>
+                    </div>`;
+            });
+        };
+
+        // --- PLAYER ---
+        window.playVid = (id) => {
+            const v = allVideos.find(x => x.id === id);
+            if(!v) return;
+            currentVideoId = id;
+            set(ref(db, `videos/${id}/views`), (v.views||0)+1);
+            let h = JSON.parse(localStorage.getItem('sya_hist')||'[]');
+            h = h.filter(x=>x.id!==id); h.unshift(v);
+            localStorage.setItem('sya_hist', JSON.stringify(h));
+
+            window.nav('player');
+            const embedUrl = window.parseVideoUrl(v.url);
+            document.getElementById('pFrame').innerHTML = `<iframe src="${embedUrl}" allowfullscreen allow="autoplay"></iframe>`;
+            document.getElementById('pTitle').innerText = v.title;
+            document.getElementById('pUser').innerText = v.uploader;
+            document.getElementById('pMeta').innerText = `${(v.views||0)+1} Views • ${v.category}`;
+            document.getElementById('pDesc').innerText = v.description;
+            document.getElementById('pLikes').innerText = v.likes || 0;
+            document.getElementById('pAvatar').innerHTML = window.getAvatarHTML(v.uploaderPic, v.uploader);
+            loadComments(id);
+        };
+
+        // --- AUTH ---
+        window.googleAuth = () => signInWithPopup(auth, provider).then(()=>closeModals());
+        window.emailAuth = () => {
+            const e = document.getElementById('em').value;
+            const p = document.getElementById('pw').value;
+            signInWithEmailAndPassword(auth,e,p).catch(()=>createUserWithEmailAndPassword(auth,e,p).then(()=>closeModals()));
+        };
+        window.userSignOut = () => signOut(auth).then(()=>window.location.reload());
+
+        onAuthStateChanged(auth, user => {
+            currentUser = user;
+            const area = document.getElementById('authBtnArea');
+            if(user) {
+                area.innerHTML = `<div class="avatar-circle" onclick="window.userSignOut()" title="Sign Out">${window.getAvatarHTML(user.photoURL, user.email)}</div>`;
+                closeModals();
+                window.addNotification("Welcome back, " + (user.displayName || "User") + "!");
+            } else {
+                area.innerHTML = `<button class="btn-main" style="padding:6px 12px;" onclick="openModal('authModal')">Sign In</button>`;
+            }
+        });
+
+        // --- UPLOAD ---
+        window.uploadVideo = () => {
+            if(!currentUser) return alert("Sign in required");
+            push(ref(db, 'videos'), {
+                title: document.getElementById('uTitle').value,
+                category: document.getElementById('uCat').value,
+                thumbnail: document.getElementById('uThumb').value,
+                url: document.getElementById('uUrl').value,
+                description: document.getElementById('uDesc').value,
+                uploader: currentUser.displayName || currentUser.email.split('@')[0],
+                uploaderEmail: currentUser.email,
+                uploaderPic: currentUser.photoURL,
+                views: 0, likes: 0, date: Date.now()
+            });
+            window.closeModals();
+            window.addNotification("Video uploaded successfully!");
+        };
+
+        // --- EXTRAS ---
+        function loadStudio() {
+            const list = document.getElementById('studioList');
+            list.innerHTML = '';
+            const myVids = allVideos.filter(v => v.uploaderEmail === currentUser.email);
+            let total = 0;
+            myVids.forEach(v => {
+                total += (v.views||0);
+                list.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#222; padding:10px; margin-bottom:10px; border-radius:8px;">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <div style="width:60px; height:34px; background:#000; overflow:hidden; border-radius:4px;">${window.getThumbHTML(v.thumbnail)}</div>
+                            <div style="font-weight:bold;">${v.title}</div>
+                        </div>
+                        <div style="display:flex; gap:15px; align-items:center;">
+                            <span>${v.views||0} views</span>
+                            <button onclick="window.delVid('${v.id}')" style="color:#ff4444; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('sTotalViews').innerText = total + " Views";
         }
 
+        window.delVid = (id) => {
+            if(confirm("Delete?")) { remove(ref(db, `videos/${id}`)); setTimeout(loadStudio, 500); }
+        };
+
+        window.postComment = () => {
+            if(!currentUser) return alert("Sign in");
+            const t = document.getElementById('comInp').value;
+            if(t) push(ref(db, `comments/${currentVideoId}`), { user:currentUser.displayName||'User', text:t, pic:currentUser.photoURL });
+            document.getElementById('comInp').value = '';
+        };
+
+        function loadComments(id) {
+            const l = document.getElementById('commentsList');
+            onValue(ref(db, `comments/${id}`), s => {
+                l.innerHTML = '';
+                const d = s.val();
+                if(d) Object.values(d).forEach(c => {
+                    l.innerHTML += `<div style="display:flex; gap:10px; margin-bottom:15px;"><div class="avatar-circle" style="width:28px; height:28px; font-size:10px;">${window.getAvatarHTML(c.pic, c.user)}</div><div><div style="font-weight:bold; font-size:12px; color:#ccc;">${c.user}</div><div style="font-size:14px;">${c.text}</div></div></div>`;
+                });
+            });
+        }
+
+        window.searchVideos = () => {
+            const term = document.getElementById('searchInp').value.toLowerCase();
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = '';
+            const filtered = allVideos.filter(v => v.title.toLowerCase().includes(term));
+            filtered.forEach(v => {
+                grid.innerHTML += `<div class="video-card" onclick="window.playVid('${v.id}')"><div class="thumb-box">${window.getThumbHTML(v.thumbnail)}</div><div class="meta"><div class="avatar-circle">${window.getAvatarHTML(v.uploaderPic, v.uploader)}</div><div class="info"><h3>${v.title}</h3><p>${v.uploader}</p></div></div></div>`;
+            });
+        };
+
+        window.loadList = (key) => {
+            const data = JSON.parse(localStorage.getItem(key)||'[]');
+            const grid = document.getElementById('listGrid');
+            grid.innerHTML = '';
+            if(data.length===0) grid.innerHTML = '<div style="color:#666">Empty</div>';
+            data.forEach(v => {
+                grid.innerHTML += `<div class="video-card" onclick="window.playVid('${v.id}')"><div class="thumb-box">${window.getThumbHTML(v.thumbnail)}</div><div class="meta"><div class="info"><h3>${v.title}</h3></div></div></div>`;
+            });
+        };
+
+        window.handleLike = () => {
+            if(!currentVideoId) return;
+            let l = JSON.parse(localStorage.getItem('sya_likes')||'[]');
+            const v = allVideos.find(x=>x.id===currentVideoId);
+            if(l.find(x=>x.id===currentVideoId)) { l = l.filter(x=>x.id!==currentVideoId); alert("Unliked"); }
+            else { l.unshift(v); alert("Liked"); }
+            localStorage.setItem('sya_likes', JSON.stringify(l));
+        };
+
+        window.nav('home');
     </script>
 </body>
 </html>
