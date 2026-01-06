@@ -1,668 +1,2295 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SyaZone</title>
-    
-    <!-- External Resources -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
-            --bg: #0f0f0f;
-            --surface: #1f1f1f;
-            --hover: #2d2d2d;
-            --text: #ffffff;
-            --text-gray: #aaaaaa;
-            --accent: #6366f1;
-            --border: #303030;
-            --red: #cc0000;
+            /* Light Mode */
+            --primary: #3ea6ff;
+            --secondary: #f2f2f2;
+            --white: #ffffff;
+            --black: #0f0f0f;
+            --text-main: #0f0f0f;
+            --text-light: #606060;
+            --border: #e5e5e5;
+            --bg-body: #ffffff;
+            --bg-nav: rgba(255, 255, 255, 0.98);
+            --bg-studio: #f9f9f9;
+            --header-h: 56px;
+            --sidebar-w: 240px;
+            --sidebar-mini-w: 72px;
+
+            /* Status Colors */
+            --success: #2ba640;
+            --error: #cc0000;
+            --info: #3ea6ff;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
-        
-        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
-
-        /* --- Header --- */
-        header {
-            position: fixed; top: 0; left: 0; right: 0; height: 60px;
-            background: rgba(15,15,15,0.98); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 16px; z-index: 100;
+        body.dark-mode {
+            /* Dark Mode */
+            --primary: #3ea6ff;
+            --secondary: #272727;
+            --white: #1f1f1f;
+            --black: #ffffff;
+            --text-main: #f1f1f1;
+            --text-light: #aaaaaa;
+            --border: #3f3f3f;
+            --bg-body: #0f0f0f;
+            --bg-nav: rgba(15, 15, 15, 0.98);
+            --bg-studio: #121212;
         }
 
-        .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .logo i { color: var(--accent); font-size: 26px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            outline: none;
+            background: none;
+        }
+
+        input,
+        textarea {
+            outline: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #909090;
+            border-radius: 4px;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-h);
+            background: var(--bg-nav);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 2000;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .logo span {
+            font-size: 32px;
+            color: var(--primary);
+        }
+
+        .logo h3 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            position: relative;
+            top: -1px;
+        }
+
+        .nav-center {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 20px;
+            display: flex;
+            align-items: center;
+        }
 
         .search-box {
-            display: flex; align-items: center; background: #121212;
-            border: 1px solid var(--border); border-radius: 40px;
-            width: 100%; max-width: 500px; height: 40px; margin: 0 10px;
+            display: flex;
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            overflow: hidden;
+            background: var(--bg-body);
+            margin-left: 40px;
         }
-        .search-box input {
-            background: transparent; border: none; color: #fff; width: 100%;
-            padding: 0 16px; outline: none; font-size: 16px;
-        }
-        .menu-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 8px; position: relative; }
 
-        /* --- Notifications UI --- */
-        .notif-badge {
-            position: absolute; top: 4px; right: 4px;
-            background: var(--red); color: white; font-size: 10px; font-weight: bold;
-            padding: 2px 5px; border-radius: 10px; border: 2px solid var(--bg);
+        .search-box input {
+            flex: 1;
+            padding: 0 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-main);
+            font-size: 16px;
+            height: 40px;
+        }
+
+        .search-btn {
+            width: 64px;
+            background: var(--secondary);
+            border-left: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+        }
+
+        .search-btn:hover {
+            background: var(--border);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
+        .icon-btn {
+            background: transparent;
+            color: var(--text-main);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: var(--secondary);
+        }
+
+        .icon-btn .material-symbols-rounded {
+            font-size: 24px;
+        }
+
+        /* Sign In Button */
+        .auth-btn {
+            padding: 0 15px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            color: var(--primary);
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            white-space: nowrap;
+        }
+
+        .auth-btn:hover {
+            background: rgba(62, 166, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        .avatar-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), #065fd4);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins';
+            cursor: pointer;
+        }
+
+        .badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 10px;
+            height: 10px;
+            background: #cc0000;
+            border-radius: 50%;
+            border: 2px solid var(--bg-nav);
             display: none;
         }
+
+        /* Notifications Dropdown */
         .notif-dropdown {
-            position: absolute; top: 55px; right: 60px; width: 300px;
-            background: #282828; border: 1px solid var(--border); border-radius: 8px;
-            display: none; flex-direction: column; z-index: 200; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-        }
-        .notif-item { padding: 12px; border-bottom: 1px solid #3e3e3e; display: flex; gap: 10px; }
-        .notif-item:hover { background: #333; }
-        .notif-text { font-size: 13px; line-height: 1.4; }
-        .notif-time { font-size: 11px; color: var(--text-gray); margin-top: 4px; }
-
-        /* --- User Menu --- */
-        .user-dropdown {
-            position: absolute; top: 55px; right: 10px; width: 220px;
-            background: #282828; border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            display: none; flex-direction: column; overflow: hidden; z-index: 300;
-        }
-        .dropdown-header { padding: 15px; border-bottom: 1px solid #3e3e3e; display: flex; gap: 10px; align-items: center; }
-        .dropdown-item { padding: 12px 15px; cursor: pointer; display: flex; gap: 12px; align-items: center; font-size: 14px; color: #eee; }
-        .dropdown-item:hover { background: #3e3e3e; }
-
-        /* --- Sidebar --- */
-        .sidebar {
-            position: fixed; top: 60px; left: 0; bottom: 0; width: 240px;
-            background: var(--bg); padding: 12px; overflow-y: auto; z-index: 90;
-            transition: transform 0.3s;
-        }
-        .side-item {
-            display: flex; align-items: center; padding: 10px 12px;
-            color: var(--text); text-decoration: none; border-radius: 10px;
-            margin-bottom: 4px; cursor: pointer;
-        }
-        .side-item:hover { background: var(--surface); }
-        .side-item.active { background: #262626; font-weight: 600; }
-        .side-item i { width: 24px; font-size: 20px; margin-right: 20px; }
-
-        /* --- Main --- */
-        main {
-            margin-top: 60px; margin-left: 240px; padding: 24px;
-            min-height: 100vh; transition: 0.3s;
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 320px;
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 2100;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+            flex-direction: column;
         }
 
-        /* --- Chips --- */
-        .chips-bar {
-            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px;
-            margin-bottom: 20px; border-bottom: 1px solid var(--border);
+        .notif-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 14px;
         }
-        .chip {
-            background: #222; border: 1px solid var(--border); color: #fff;
-            padding: 6px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+
+        .notif-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
             transition: 0.2s;
         }
-        .chip:hover { background: #333; }
-        .chip.active { background: #fff; color: #000; font-weight: 500; }
 
-        /* --- Video Grid --- */
-        .grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px 16px;
+        .notif-item:hover {
+            background: var(--secondary);
         }
-        .video-card { cursor: pointer; }
-        .thumb-box {
-            width: 100%; aspect-ratio: 16/9; background: #222; border-radius: 12px;
-            overflow: hidden; margin-bottom: 10px; position: relative;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .thumb-box img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .meta { display: flex; gap: 12px; }
-        .avatar-circle {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: var(--accent); color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 14px; flex-shrink: 0; overflow: hidden;
-        }
-        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-        
-        .info h3 { font-size: 16px; margin-bottom: 4px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .info p { font-size: 13px; color: var(--text-gray); }
 
-        /* --- Player --- */
-        #playerView { display: none; max-width: 1100px; margin: 0 auto; }
-        .player-wrapper {
-            width: 100%; aspect-ratio: 16/9; background: #000;
-            border-radius: 12px; overflow: hidden; margin-bottom: 16px;
+        .notif-thumb {
+            width: 60px;
+            height: 34px;
+            border-radius: 4px;
+            object-fit: cover;
+            background: #000;
         }
-        .player-wrapper iframe { width: 100%; height: 100%; border: none; }
-        .actions { display: flex; justify-content: space-between; margin-top: 10px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .btn-pill { background: var(--surface); color: #fff; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-        /* --- Toast --- */
-        #toast {
-            visibility: hidden; min-width: 250px; background-color: #333; color: #fff;
-            text-align: center; border-radius: 4px; padding: 16px; position: fixed;
-            z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        .notif-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
-        /* --- Modals --- */
-        .modal-bg {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8); z-index: 200; display: none;
-            justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        .notif-title {
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 2px;
         }
-        .modal { background: #1a1a1a; padding: 24px; border-radius: 12px; width: 400px; border: 1px solid var(--border); }
-        .inp { width: 100%; background: #0f0f0f; border: 1px solid #333; color: #fff; padding: 10px; margin-bottom: 10px; border-radius: 6px; }
-        .btn-main { width: 100%; background: var(--accent); color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 280px;
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 2100;
+            display: none;
+            flex-direction: column;
+        }
+
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .profile-menu-item:hover {
+            background: var(--secondary);
+        }
+
+        .profile-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Channel Page */
+        .channel-overlay {
+            position: fixed;
+            top: var(--header-h);
+            left: 0;
+            width: 100%;
+            height: calc(100vh - var(--header-h));
+            background: var(--bg-body);
+            z-index: 1100;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .channel-header {
+            background: linear-gradient(135deg, var(--primary), #065fd4);
+            padding: 40px 24px;
+            color: white;
+            text-align: center;
+        }
+
+        .channel-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .channel-stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .channel-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+
+        /* Custom Toast Notification */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 250px;
+            padding: 12px 16px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideIn 0.3s forwards, fadeOut 0.3s forwards 3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Custom Confirm Modal */
+        .confirm-modal-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-box {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 12px;
+            width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .confirm-btns {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            padding: 8px 16px;
+            background: transparent;
+            color: var(--text-light);
+            border-radius: 18px;
+            font-weight: 500;
+        }
+
+        .btn-confirm {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border-radius: 18px;
+            font-weight: 500;
+        }
+
+        /* Mobile Search Overlay */
+        .mobile-search-overlay {
+            display: none;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            position: fixed;
+            top: var(--header-h);
+            left: 0;
+            width: var(--sidebar-w);
+            height: calc(100vh - var(--header-h));
+            background: var(--bg-body);
+            overflow-y: hidden;
+            transition: width 0.2s;
+            z-index: 900;
+        }
+
+        .sidebar:hover {
+            overflow-y: auto;
+        }
+
+        .sidebar-inner {
+            padding: 12px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: background 0.2s;
+            margin-bottom: 4px;
+            /* Default spacing */
+        }
+
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            background: var(--secondary);
+        }
+
+        .sidebar-item.active {
+            font-weight: 600;
+            background: var(--secondary);
+        }
+
+        .sidebar-item .material-symbols-rounded {
+            margin-right: 24px;
+            font-size: 24px;
+        }
+
+        /* Subscriptions List Specifics */
+        #subsList .sidebar-item {
+            margin-bottom: 8px;
+            /* Increased spacing for subs */
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 12px 0;
+        }
+
+        .sub-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+            padding: 8px 12px;
+        }
+
+        /* --- MINI SIDEBAR (Fixed Alignment) --- */
+        .mini-sidebar .sidebar {
+            width: var(--sidebar-mini-w);
+        }
+
+        .mini-sidebar .sidebar-item {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 72px;
+            padding: 16px 0 14px 0;
+            margin-bottom: 0;
+            gap: 6px;
+        }
+
+        .mini-sidebar .sidebar-item .material-symbols-rounded {
+            margin-right: 0;
+            font-size: 24px;
+        }
+
+        /* Fixed text alignment and wrapping for "Liked Videos" */
+        .mini-sidebar .sidebar-item p {
+            font-size: 10px;
+            white-space: normal;
+            /* Allow wrapping */
+            text-align: center;
+            line-height: 1.2;
+            max-width: 100%;
+            padding: 0 4px;
+        }
+
+        .mini-sidebar .sub-header,
+        .mini-sidebar #subsList,
+        .mini-sidebar .divider,
+        .mini-sidebar .hide-mini {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            margin-top: var(--header-h);
+            padding: 24px;
+            transition: margin-left 0.2s;
+            min-height: calc(100vh - var(--header-h));
+        }
+
+        .mini-sidebar .main-content {
+            margin-left: var(--sidebar-mini-w);
+        }
+
+        /* Categories */
+        .categories {
+            position: sticky;
+            top: var(--header-h);
+            background: var(--bg-body);
+            z-index: 800;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+            scrollbar-width: none;
+        }
+
+        .bubble {
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: var(--secondary);
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .bubble.active {
+            background: var(--black);
+            color: var(--bg-body);
+        }
+
+        /* Video Grid */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 40px 16px;
+        }
+
+        .video-card {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .thumbnail {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+            margin-bottom: 10px;
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.2s;
+        }
+
+        .duration {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .meta {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .meta-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #ccc;
+            flex-shrink: 0;
+        }
+
+        .meta-text {
+            flex: 1;
+        }
+
+        .video-title {
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.2;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        .channel-name {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 2px;
+        }
+
+        .video-stats {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        /* Watch Overlay */
+        .watch-overlay {
+            position: fixed;
+            top: var(--header-h);
+            left: 0;
+            width: 100%;
+            height: calc(100vh - var(--header-h));
+            background: var(--bg-body);
+            z-index: 1100;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .watch-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 1000px) {
+            .watch-container {
+                grid-template-columns: 3fr 1fr;
+            }
+        }
+
+        .video-player-frame {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: black;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-player-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Modals */
+        .modal-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-wrap.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.9);
+            transition: transform 0.2s;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-wrap.open .modal {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            cursor: pointer;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--bg-body);
+            color: var(--text-main);
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            background: var(--primary);
+            color: white;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Studio Overlay & Table */
+        .studio-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-studio);
+            z-index: 1200;
+            display: none;
+            flex-direction: row;
+        }
+
+        .studio-nav {
+            width: 250px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .studio-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .video-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .video-table th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-light);
+            font-size: 12px;
+        }
+
+        .video-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        /* Custom Table Buttons */
+        .tbl-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 5px;
+            transition: 0.2s;
+        }
+
+        .tbl-btn:hover {
+            background: var(--border);
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            main { margin-left: 0; }
+            .navbar {
+                padding: 0 10px;
+            }
+
+            .nav-center {
+                display: none;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+                box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+                border-right: none;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .mini-sidebar .sidebar {
+                width: 260px;
+            }
+
+            .mini-sidebar .main-content {
+                margin-left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 0;
+            }
+
+            .video-grid {
+                gap: 0;
+            }
+
+            .video-card {
+                margin-bottom: 10px;
+            }
+
+            .thumbnail {
+                border-radius: 0;
+            }
+
+            .meta {
+                padding: 0 12px 12px 12px;
+            }
+
+            .mobile-search-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: var(--bg-nav);
+                display: none;
+                align-items: center;
+                padding: 0 10px;
+                z-index: 1001;
+            }
+
+            .mobile-search-overlay.active {
+                display: flex;
+            }
+
+            .mobile-search-overlay .search-box {
+                margin: 0 10px;
+            }
+
+            .studio-overlay {
+                flex-direction: column;
+            }
+
+            .studio-nav {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                overflow-x: auto;
+                border-bottom: 1px solid var(--border);
+                border-right: none;
+            }
+
+            .studio-content {
+                padding: 16px;
+            }
         }
-        .hidden { display: none !important; }
     </style>
 </head>
-<body>
 
-    <!-- TOAST -->
-    <div id="toast">Notification</div>
+<body class="">
 
-    <!-- HEADER -->
-    <header>
-        <div style="display:flex; align-items:center; gap:16px;">
-            <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-            <div class="logo" onclick="nav('home')"><i class="fas fa-play-circle"></i> SyaZone</div>
-        </div>
-        <div class="search-box">
-            <input type="text" id="searchInp" placeholder="Search..." oninput="searchVideos()">
-            <i class="fas fa-search" style="color:#aaa; margin-right:16px;"></i>
-        </div>
-        <div style="display:flex; gap:12px; align-items:center;">
-            <button class="menu-btn" onclick="openModal('uploadModal')"><i class="fas fa-video"></i></button>
-            
-            <!-- NOTIFICATIONS -->
-            <div style="position:relative;">
-                <button class="menu-btn" onclick="toggleNotif()">
-                    <i class="fas fa-bell"></i>
-                    <div id="notifBadge" class="notif-badge">0</div>
-                </button>
-                <div id="notifDropdown" class="notif-dropdown">
-                    <div style="padding:15px; text-align:center; color:#666;">No Notifications</div>
-                </div>
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Confirm Modal -->
+    <div class="confirm-modal-wrap" id="confirmModal">
+        <div class="confirm-box">
+            <h3 style="margin-bottom: 10px;">Confirmation</h3>
+            <p id="confirmMsg" style="color: var(--text-light); margin-bottom: 20px;">Are you sure?</p>
+            <div class="confirm-btns">
+                <button class="btn-cancel" onclick="closeConfirm(false)">Cancel</button>
+                <button class="btn-confirm" onclick="closeConfirm(true)">Confirm</button>
             </div>
+        </div>
+    </div>
 
-            <div id="authBtnArea">
-                <button class="btn-main" style="padding:6px 12px;" onclick="openModal('authModal')">Sign In</button>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <button class="icon-btn" onclick="toggleSidebar()">
+                <span class="material-symbols-rounded">menu</span>
+            </button>
+            <div class="logo" onclick="goHome()">
+                <span class="material-symbols-rounded">play_circle</span>
+                <h3>SyaZone</h3>
+            </div>
+        </div>
+
+        <div class="nav-center">
+            <div class="search-box">
+                <input type="text" placeholder="Search" id="searchInput" onkeyup="handleSearch(event)">
+                <button class="search-btn" onclick="handleSearch({key: 'Enter'})">
+                    <span class="material-symbols-rounded">search</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Search Overlay -->
+        <div class="mobile-search-overlay" id="mobileSearch">
+            <button class="icon-btn" onclick="toggleMobileSearch()">
+                <span class="material-symbols-rounded">arrow_back</span>
+            </button>
+            <div class="search-box">
+                <input type="text" placeholder="Search" id="mobileSearchInput" onkeyup="handleSearch(event)">
+                <button class="search-btn"><span class="material-symbols-rounded">search</span></button>
+            </div>
+        </div>
+
+        <div class="nav-right">
+            <!-- Mobile Search Icon -->
+            <button class="icon-btn" id="mobileSearchBtn" onclick="toggleMobileSearch()" style="display: none;">
+                <span class="material-symbols-rounded">search</span>
+            </button>
+
+            <!-- Upload Icon -->
+            <button class="icon-btn" onclick="openUploadModal()" title="Create">
+                <span class="material-symbols-rounded" style="color: #ff4e45;">video_call</span>
+            </button>
+
+            <!-- Notification Bell -->
+            <button class="icon-btn" onclick="toggleNotif()" title="Notifications">
+                <span class="material-symbols-rounded">notifications</span>
+                <span class="badge" id="notifBadge"></span>
+            </button>
+
+            <!-- Notification Dropdown -->
+            <div class="notif-dropdown" id="notifDropdown">
+                <div class="notif-header">Notifications</div>
+                <div id="notifList"></div>
             </div>
 
             <!-- Profile Dropdown -->
-            <div id="profileMenu" class="user-dropdown">
-                <div class="dropdown-header">
-                    <div id="menuAvatar" class="avatar-circle"></div>
-                    <div style="font-size:14px; font-weight:bold; overflow:hidden; text-overflow:ellipsis;" id="menuName">User</div>
+            <div class="profile-dropdown" id="profileDropdown">
+                <div class="profile-menu-item" onclick="openEditProfile()">
+                    <span class="material-symbols-rounded">edit</span>
+                    <span>Edit Profile</span>
                 </div>
-                <div class="dropdown-item" onclick="nav('studio')"><i class="fas fa-chart-bar"></i> Studio</div>
-                <div class="dropdown-item" onclick="nav('history')"><i class="fas fa-history"></i> History</div>
-                <div class="dropdown-item" onclick="userSignOut()"><i class="fas fa-sign-out-alt"></i> Sign Out</div>
+                <div class="profile-menu-item" onclick="openMyChannel()">
+                    <span class="material-symbols-rounded">person</span>
+                    <span>My Channel</span>
+                </div>
+                <div class="profile-menu-item" onclick="openStudio()">
+                    <span class="material-symbols-rounded">bar_chart</span>
+                    <span>Studio</span>
+                </div>
+                <div class="profile-menu-item" onclick="handleLogout()">
+                    <span class="material-symbols-rounded">logout</span>
+                    <span>Sign Out</span>
+                </div>
             </div>
-        </div>
-    </header>
 
-    <!-- SIDEBAR -->
-    <nav class="sidebar" id="sidebar">
-        <div class="side-item active" onclick="nav('home', 'All')" id="nav-All"><i class="fas fa-home"></i> Home</div>
-        <div class="side-item" onclick="nav('home', 'Gaming')" id="nav-Gaming"><i class="fas fa-gamepad"></i> Gaming</div>
-        <div class="side-item" onclick="nav('home', 'Music')" id="nav-Music"><i class="fas fa-music"></i> Music</div>
-        <div class="side-item" onclick="nav('home', 'Tech')" id="nav-Tech"><i class="fas fa-microchip"></i> Tech</div>
-        <div class="side-item" onclick="nav('home', 'Coding')" id="nav-Coding"><i class="fas fa-code"></i> Coding</div>
-        <hr style="border-color:#333; margin:10px 0;">
-        <div class="side-item" onclick="nav('history')" id="nav-history"><i class="fas fa-history"></i> History</div>
-        <div class="side-item" onclick="nav('liked')" id="nav-liked"><i class="fas fa-thumbs-up"></i> Liked Videos</div>
-        <div class="side-item" onclick="nav('studio')" id="nav-studio"><i class="fas fa-sliders-h"></i> Studio</div>
+            <!-- Auth / Sign In Button (Correctly Placed) -->
+            <div id="authContainer"></div>
+        </div>
     </nav>
 
-    <!-- MAIN -->
-    <main>
-        <!-- Home -->
-        <div id="homeView">
-            <div class="chips-bar">
-                <div class="chip active" onclick="filter('All')">All</div>
-                <div class="chip" onclick="filter('Gaming')">Gaming</div>
-                <div class="chip" onclick="filter('Music')">Music</div>
-                <div class="chip" onclick="filter('Tech')">Tech</div>
-                <div class="chip" onclick="filter('Coding')">Coding</div>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-inner">
+            <div class="sidebar-item active" onclick="goHome()">
+                <span class="material-symbols-rounded">home</span>
+                <p>Home</p>
             </div>
-            <div class="grid" id="videoGrid"></div>
+            <div class="sidebar-item" onclick="openStudio()">
+                <span class="material-symbols-rounded">bar_chart</span>
+                <p>Studio</p>
+            </div>
+            <div class="sidebar-item" onclick="openHistory()">
+                <span class="material-symbols-rounded">history</span>
+                <p>History</p>
+            </div>
+            <div class="sidebar-item" onclick="openLiked()">
+                <span class="material-symbols-rounded">thumb_up</span>
+                <p>Liked Videos</p>
+            </div>
+            <div class="divider"></div>
+            <div class="sub-header">SUBSCRIPTIONS</div>
+            <div id="subsList">
+                <p style="padding: 0 12px; font-size: 13px; color: var(--text-light);">Sign in to see subscriptions</p>
+            </div>
+            <div class="divider"></div>
+            <div class="sidebar-item hide-mini" id="logoutBtn" style="display:none;" onclick="handleLogout()">
+                <span class="material-symbols-rounded">logout</span>
+                <p>Sign Out</p>
+            </div>
+            <div class="sidebar-item" onclick="toggleTheme()">
+                <span class="material-symbols-rounded">dark_mode</span>
+                <p>Theme</p>
+            </div>
         </div>
+    </aside>
 
-        <!-- Player -->
-        <div id="playerView">
-            <button onclick="nav('home')" style="background:none; border:none; color:#aaa; margin-bottom:10px; cursor:pointer;"><i class="fas fa-arrow-left"></i> Back</button>
-            <div class="player-wrapper" id="pFrame"></div>
-            <h1 id="pTitle" style="font-size:20px; margin-top:10px;">Title</h1>
-            <div class="actions">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div id="pAvatar" class="avatar-circle"></div>
-                    <div>
-                        <div id="pUser" style="font-weight:bold;">User</div>
-                        <div style="font-size:12px; color:#aaa;">1.5K Subs</div>
-                    </div>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-pill" onclick="handleLike()"><i class="fas fa-thumbs-up"></i> <span id="pLikes">0</span></button>
-                    <button class="btn-pill"><i class="fas fa-share"></i> Share</button>
-                </div>
-            </div>
-            <div style="background:#222; padding:15px; border-radius:10px; margin-top:15px;">
-                <div id="pMeta" style="font-weight:bold; font-size:13px; margin-bottom:5px;"></div>
-                <div id="pDesc" style="color:#ddd; font-size:14px;"></div>
-            </div>
-            <h3 style="margin-top:20px;">Comments</h3>
-            <div id="commentsList" style="margin-top:15px;"></div>
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <input type="text" id="comInp" class="inp" style="margin:0;" placeholder="Add a comment...">
-                <button class="btn-main" onclick="postComment()" style="width:auto;">Post</button>
-            </div>
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="categories" id="categories">
+            <div class="bubble active" onclick="filterCategory('All')">All</div>
+            <div class="bubble" onclick="filterCategory('Music')">Music</div>
+            <div class="bubble" onclick="filterCategory('Gaming')">Gaming</div>
+            <div class="bubble" onclick="filterCategory('Code')">Code</div>
+            <div class="bubble" onclick="filterCategory('Vlogs')">Vlogs</div>
+            <div class="bubble" onclick="filterCategory('News')">News</div>
         </div>
-
-        <!-- List -->
-        <div id="listView" class="hidden">
-            <h2 id="listTitle" style="margin-bottom:20px;">History</h2>
-            <div class="grid" id="listGrid"></div>
-        </div>
-
-        <!-- Studio -->
-        <div id="studioView" class="hidden">
-            <h1>Channel Studio</h1>
-            <div style="margin:20px 0; background:#1f1f1f; padding:20px; border-radius:10px;">
-                <h2 id="sTotalViews">0 Views</h2>
-                <p style="color:#aaa;">Total Channel Views</p>
-            </div>
-            <div style="background:#1f1f1f; padding:20px; border-radius:10px; margin-bottom:20px;">
-                <canvas id="studioChart" style="max-height:250px;"></canvas>
-            </div>
-            <h3>Your Videos</h3>
-            <div id="studioList" style="margin-top:15px;"></div>
-        </div>
+        <h2 id="pageTitle" style="display:none; margin-bottom: 20px;"></h2>
+        <div class="video-grid" id="videoGrid"></div>
     </main>
 
-    <!-- Modals -->
-    <div id="authModal" class="modal-bg">
-        <div class="modal">
-            <h2>Sign In</h2>
-            <input type="email" id="em" class="inp" placeholder="Email">
-            <input type="password" id="pw" class="inp" placeholder="Password">
-            <button class="btn-main" onclick="emailAuth()">Login / Register</button>
-            <div style="text-align:center; margin:10px; color:#aaa;">or</div>
-            <button class="btn-main" style="background:#fff; color:#000;" onclick="googleAuth()">Google Login</button>
-            <button style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer;" onclick="closeModals()">Cancel</button>
+    <!-- Watch Overlay -->
+    <div class="watch-overlay" id="watchOverlay">
+        <div class="watch-container">
+            <div class="watch-primary">
+                <button onclick="closeWatch()"
+                    style="background:none; display:flex; gap:5px; align-items:center; color: var(--text-main); font-weight:500; margin-bottom: 10px;">
+                    <span class="material-symbols-rounded">arrow_back</span> Back
+                </button>
+                <div class="video-player-frame" id="playerContainer"></div>
+                <h1 id="watchTitle" style="font-size:20px; margin: 12px 0 8px 0;">Video Title</h1>
+                <div class="watch-actions"
+                    style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                    <div class="channel-info" style="display:flex; align-items:center; gap:12px;">
+                        <img src="" class="meta-avatar" id="watchChannelAvatar">
+                        <div>
+                            <p style="font-weight:600; font-size: 16px; color: var(--text-main);" id="watchChannelName">
+                                Channel</p>
+                            <p style="font-size:12px; color:var(--text-light);">0 subscribers</p>
+                        </div>
+                        <button class="auth-btn" style="background:var(--black); color:var(--bg-body); border:none;"
+                            id="subBtn" onclick="toggleSubscribe()">Subscribe</button>
+                    </div>
+                    <div class="action-buttons" style="display:flex; gap:8px;">
+                        <button class="auth-btn"
+                            style="background:var(--secondary); color:var(--text-main); border:none;" id="likeBtn"
+                            onclick="toggleLike()">
+                            <span class="material-symbols-rounded">thumb_up</span> <span id="likeCount">0</span>
+                        </button>
+                        <button class="auth-btn"
+                            style="background:var(--secondary); color:var(--text-main); border:none;"
+                            onclick="showToast('Disliked', 'info')">
+                            <span class="material-symbols-rounded">thumb_down</span>
+                        </button>
+                        <button class="auth-btn"
+                            style="background:var(--secondary); color:var(--text-main); border:none;"
+                            onclick="showToast('Shared!', 'success')">
+                            <span class="material-symbols-rounded">share</span> Share
+                        </button>
+                    </div>
+                </div>
+                <div
+                    style="background:var(--secondary); padding:12px; border-radius:12px; margin-top:10px; font-size:14px;">
+                    <p style="font-weight:600; color:var(--text-main); margin-bottom:8px;">
+                        <span id="watchViews">0 views</span> • <span id="watchDate">Just now</span>
+                    </p>
+                    <p id="watchDesc" style="color:var(--text-main);">Description...</p>
+                </div>
+                <!-- Comments -->
+                <div style="margin-top: 24px;">
+                    <h3>Comments</h3>
+                    <div style="display: flex; gap: 16px; margin-top: 20px;">
+                        <img src="" class="meta-avatar" id="commentUserAvatar" style="display:none;">
+                        <div style="flex: 1;">
+                            <input type="text"
+                                style="width: 100%; border: none; border-bottom: 1px solid var(--border); background: transparent; padding: 8px 0; color: var(--text-main);"
+                                id="commentInput" placeholder="Add a comment...">
+                            <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                                <button onclick="postComment()"
+                                    style="background: var(--primary); color: white; padding: 8px 16px; border-radius: 18px;">Comment</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="commentList" style="margin-top: 30px; display: flex; flex-direction: column; gap: 20px;">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="uploadModal" class="modal-bg">
+    <!-- Auth Modal -->
+    <div class="modal-wrap" id="authModal">
         <div class="modal">
-            <h2>Upload Video</h2>
-            <input type="text" id="uTitle" class="inp" placeholder="Title">
-            <select id="uCat" class="inp">
-                <option value="Gaming">Gaming</option>
-                <option value="Music">Music</option>
-                <option value="Tech">Tech</option>
-                <option value="Coding">Coding</option>
-            </select>
-            <input type="text" id="uThumb" class="inp" placeholder="Thumbnail URL (Optional - Auto YouTube)">
-            <input type="text" id="uUrl" class="inp" placeholder="Video URL (YouTube/Drive)">
-            <input type="text" id="uDesc" class="inp" placeholder="Description">
-            <button class="btn-main" onclick="uploadVideo()">Upload</button>
-            <button style="background:none; border:none; color:#aaa; width:100%; margin-top:10px; cursor:pointer;" onclick="closeModals()">Cancel</button>
+            <span class="material-symbols-rounded close-modal" onclick="closeModal('authModal')">close</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span class="material-symbols-rounded"
+                    style="font-size: 50px; color: var(--primary);">account_circle</span>
+                <h2 id="authTitle">Sign In</h2>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 12px; font-weight: 600; margin-bottom: 5px; display: block;">Email</label>
+                <input type="email" class="form-control" id="authEmail">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 12px; font-weight: 600; margin-bottom: 5px; display: block;">Password</label>
+                <input type="password" class="form-control" id="authPass">
+            </div>
+            <button class="btn-primary" onclick="handleAuthSubmit()">Submit</button>
+            <button
+                style="width:100%; margin-top:10px; padding:10px; background:white; border:1px solid #ddd; border-radius:4px; display:flex; align-items:center; justify-content:center; gap:10px; color: black;"
+                onclick="handleGoogleAuth()">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18"> Sign in with
+                Google
+            </button>
+            <p style="text-align:center; margin-top:20px; font-size:14px; color:var(--primary); cursor:pointer;"
+                onclick="toggleAuthMode()">
+                <span id="authToggleText">Create an account</span>
+            </p>
         </div>
     </div>
 
+    <!-- Upload/Edit Modal -->
+    <div class="modal-wrap" id="uploadModal">
+        <div class="modal">
+            <span class="material-symbols-rounded close-modal" onclick="closeModal('uploadModal')">close</span>
+            <h2 id="uploadModalTitle">Upload Video</h2>
+            <div style="margin-top: 20px;">
+                <label>Title</label>
+                <input type="text" class="form-control" id="vidTitle">
+                <label>Thumbnail URL</label>
+                <input type="text" class="form-control" id="vidThumb">
+                <label>Video URL (YouTube/Drive)</label>
+                <input type="text" class="form-control" id="vidUrl">
+                <label>Description</label>
+                <textarea class="form-control" id="vidDesc" rows="3"></textarea>
+                <button class="btn-primary" onclick="submitVideo()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div class="modal-wrap" id="analyticsModal">
+        <div class="modal" style="max-width: 900px;">
+            <span class="material-symbols-rounded close-modal" onclick="closeModal('analyticsModal')">close</span>
+            <h2>Channel Analytics</h2>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
+                <div
+                    style="background: var(--bg-body); border: 1px solid var(--border); padding: 15px; border-radius: 12px;">
+                    <h4 style="margin-bottom: 10px;">Views (Last 7 Days)</h4>
+                    <div style="height: 250px;"><canvas id="viewsChart"></canvas></div>
+                </div>
+                <div
+                    style="background: var(--bg-body); border: 1px solid var(--border); padding: 15px; border-radius: 12px;">
+                    <h4 style="margin-bottom: 10px;">Engagement</h4>
+                    <div style="height: 200px;"><canvas id="engChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal-wrap" id="editProfileModal">
+        <div class="modal">
+            <span class="material-symbols-rounded close-modal" onclick="closeModal('editProfileModal')">close</span>
+            <h2>Edit Profile</h2>
+            <div style="margin-top: 20px;">
+                <label>Channel Name</label>
+                <input type="text" class="form-control" id="editChannelName">
+                <label>Profile Picture URL (optional)</label>
+                <input type="text" class="form-control" id="editProfilePic"
+                    placeholder="Leave empty for default avatar">
+                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Channel Page Overlay -->
+    <div class="channel-overlay" id="channelOverlay">
+        <button onclick="closeChannel()"
+            style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 10;">
+            <span class="material-symbols-rounded">arrow_back</span>
+        </button>
+        <div class="channel-header">
+            <div class="channel-avatar" id="channelPageAvatar">A</div>
+            <h2 id="channelPageName">Channel Name</h2>
+            <div class="channel-stats">
+                <span><strong id="channelPageVideos">0</strong> videos</span>
+                <span><strong id="channelPageSubs">0</strong> subscribers</span>
+            </div>
+            <button class="auth-btn" style="background: white; color: var(--primary); border: none; margin-top: 16px;"
+                id="channelSubBtn" onclick="toggleChannelSubscribe()">Subscribe</button>
+        </div>
+        <div class="channel-content">
+            <h3 style="margin-bottom: 20px;">Videos</h3>
+            <div class="video-grid" id="channelVideoGrid"></div>
+        </div>
+    </div>
+
+    <!-- Studio Overlay -->
+    <div class="studio-overlay" id="studioOverlay">
+        <div class="studio-nav">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+                <span class="material-symbols-rounded" style="color:var(--primary);">play_circle</span>
+                <span style="font-weight:700; font-size: 20px;">Studio</span>
+            </div>
+            <div class="sidebar-item active">
+                <span class="material-symbols-rounded">dashboard</span>
+                Dashboard
+            </div>
+            <div class="sidebar-item" onclick="closeStudio()">
+                <span class="material-symbols-rounded">arrow_back</span>
+                Exit Studio
+            </div>
+        </div>
+        <div class="studio-content">
+            <h2 style="margin-bottom:20px;">Channel Dashboard</h2>
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div
+                    style="background: linear-gradient(135deg, #3ea6ff, #065fd4); padding: 20px; border-radius: 12px; color: white;">
+                    <h2 id="studioTotalVideos">0</h2>
+                    <p>Total Videos</p>
+                </div>
+                <div
+                    style="background: linear-gradient(135deg, #ff8800, #ff4e45); padding: 20px; border-radius: 12px; color: white;">
+                    <h2 id="studioTotalViews">0</h2>
+                    <p>Total Views</p>
+                </div>
+                <div
+                    style="background: linear-gradient(135deg, #2ba640, #0fab32); padding: 20px; border-radius: 12px; color: white;">
+                    <h2 id="studioTotalSubs">0</h2>
+                    <p>Genuine Subscribers</p>
+                </div>
+            </div>
+            <div style="background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items: center;">
+                    <h3>Your Videos</h3>
+                    <button class="btn-primary" style="width:auto; padding: 8px 16px;"
+                        onclick="openAnalytics()">Analytics</button>
+                </div>
+                <table class="video-table">
+                    <thead>
+                        <tr>
+                            <th>Video</th>
+                            <th>Date</th>
+                            <th>Views</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studioVideoList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, push, onValue, set, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-auth.js";
+        import { getDatabase, ref, push, onValue, set, remove, runTransaction, get, update } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-database.js";
 
-        // --- PASTE FIREBASE CONFIG HERE ---
-const firebaseConfig = {
-  apiKey: "AIzaSyC88eS8DUWMXqoQH-TsynbUEHpI6sMSb1M",
-  authDomain: "sya-zone-8e4ff.firebaseapp.com",
-  databaseURL: "https://sya-zone-8e4ff-default-rtdb.firebaseio.com",
-  projectId: "sya-zone-8e4ff",
-  storageBucket: "sya-zone-8e4ff.firebasestorage.app",
-  messagingSenderId: "753157195554",
-  appId: "1:753157195554:web:051d36b6a31ae51245877b"
-};
-        let app, auth, db;
+        const firebaseConfig = {
+            apiKey: "AIzaSyC88eS8DUWMXqoQH-TsynbUEHpI6sMSb1M",
+            authDomain: "sya-zone-8e4ff.firebaseapp.com",
+            databaseURL: "https://sya-zone-8e4ff-default-rtdb.firebaseio.com",
+            projectId: "sya-zone-8e4ff",
+            storageBucket: "sya-zone-8e4ff.firebasestorage.app",
+            messagingSenderId: "753157195554",
+            appId: "1:753157195554:web:051d36b6a31ae51245877b"
+        };
+        // Initialize
+        let app, auth, db, provider;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getDatabase(app);
-        } catch(e) { console.error("Config Missing"); }
-
-        const provider = new GoogleAuthProvider();
-        let currentUser = null;
-        let allVideos = [];
-        let currentVideoId = null;
-        let notifications = [];
-        let unreadCount = 0;
-
-        // --- TOAST SYSTEM ---
-        window.showToast = (msg) => {
-            const x = document.getElementById("toast");
-            x.className = "show";
-            x.innerText = msg;
-            setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
-        };
-
-        // --- NOTIFICATION LOGIC ---
-        window.addNotification = (text) => {
-            notifications.unshift({ text: text, time: 'Just now' });
-            unreadCount++;
-            const badge = document.getElementById('notifBadge');
-            badge.innerText = unreadCount;
-            badge.style.display = 'block'; 
-            renderNotifDropdown();
-        };
-
-        function renderNotifDropdown() {
-            const dd = document.getElementById('notifDropdown');
-            if (notifications.length === 0) {
-                dd.innerHTML = '<div style="padding:15px; text-align:center; color:#666;">No Notifications</div>';
-                return;
-            }
-            dd.innerHTML = '';
-            notifications.forEach(n => {
-                dd.innerHTML += `
-                    <div class="notif-item">
-                        <div style="background:var(--accent); width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0;"></div>
-                        <div>
-                            <div class="notif-text">${n.text}</div>
-                            <div class="notif-time">${n.time}</div>
-                        </div>
-                    </div>`;
-            });
+            provider = new GoogleAuthProvider();
+        } catch (e) {
+            console.error(e);
+            alert("Set your Firebase keys in the code!");
         }
 
-        window.toggleNotif = () => {
-            const dd = document.getElementById('notifDropdown');
-            const badge = document.getElementById('notifBadge');
-            
-            if (dd.style.display === 'flex') {
-                dd.style.display = 'none';
-            } else {
-                dd.style.display = 'flex';
-                // Reset count
-                unreadCount = 0;
-                badge.style.display = 'none';
-            }
-            document.getElementById('profileMenu').classList.remove('show'); // Close profile
+        // State
+        let currentUser = null;
+        let allVideos = {};
+        let allUsers = {}; // New state for live user data
+        let currentVideoId = null;
+        let isLoginMode = true;
+        let chartV = null, chartE = null;
+        let currentCategory = 'All';
+        let recentVideos = [];
+        let isEditMode = false;
+        let currentEditId = null;
+
+        // Elements
+        const els = {
+            videoGrid: document.getElementById('videoGrid'),
+            authContainer: document.getElementById('authContainer'),
+            authModal: document.getElementById('authModal'),
+            uploadModal: document.getElementById('uploadModal'),
+            uploadModalTitle: document.getElementById('uploadModalTitle'),
+            watchOverlay: document.getElementById('watchOverlay'),
+            playerContainer: document.getElementById('playerContainer'),
+            subsList: document.getElementById('subsList'),
+            commentList: document.getElementById('commentList'),
+            studioOverlay: document.getElementById('studioOverlay'),
+            studioList: document.getElementById('studioVideoList'),
+            mobileSearch: document.getElementById('mobileSearch'),
+            notifDropdown: document.getElementById('notifDropdown'),
+            notifList: document.getElementById('notifList'),
+            notifBadge: document.getElementById('notifBadge')
         };
 
-        // --- CORE HELPER FUNCTIONS ---
-        window.extractYouTubeID = (url) => {
-            if (!url) return null;
-            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[7].length == 11) ? match[7] : null;
+        // --- CUSTOM TOASTS ---
+        window.showToast = (msg, type = 'info') => {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.style.background = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--info)';
+            t.innerText = msg;
+            document.getElementById('toast-container').appendChild(t);
+            setTimeout(() => t.remove(), 3500);
         };
 
-        window.getThumb = (manualUrl, videoUrl) => {
-            if(manualUrl && manualUrl.length > 5) return `<img src="${manualUrl}">`;
-            const ytid = window.extractYouTubeID(videoUrl);
-            if(ytid) return `<img src="https://img.youtube.com/vi/${ytid}/hqdefault.jpg">`;
-            return `<img src="https://placehold.co/600x400/333/999?text=No+Thumbnail">`;
+        let confirmCallback = null;
+        window.showConfirm = (msg, callback) => {
+            document.getElementById('confirmMsg').innerText = msg;
+            document.getElementById('confirmModal').style.display = 'flex';
+            confirmCallback = callback;
         };
-
-        window.getVideoEmbed = (url) => {
-            const ytid = window.extractYouTubeID(url);
-            if(ytid) return `https://www.youtube.com/embed/${ytid}?autoplay=1`;
-            if(url.includes('drive.google.com')) return url.replace('/view', '/preview');
-            return url;
-        };
-
-        window.getAvatar = (pic, name) => {
-            if(pic) return `<img src="${pic}">`;
-            return (name ? name.charAt(0).toUpperCase() : 'U');
-        };
-
-        // --- UI LOGIC ---
-        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('open');
-        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-        window.closeModals = () => document.querySelectorAll('.modal-bg').forEach(e => e.style.display = 'none');
-        
-        window.toggleProfile = () => {
-            const el = document.getElementById('profileMenu');
-            el.classList.toggle('show');
-            document.getElementById('notifDropdown').style.display = 'none'; // Close notif
-        };
-
-        window.nav = (view, catFilter = null) => {
-            ['homeView', 'playerView', 'listView', 'studioView'].forEach(id => document.getElementById(id).style.display = 'none');
-            document.querySelectorAll('.side-item').forEach(el => el.classList.remove('active'));
-            if(catFilter) document.getElementById('nav-'+catFilter)?.classList.add('active');
-            else if (view==='history') document.getElementById('nav-history').classList.add('active');
-            else if (view==='liked') document.getElementById('nav-liked').classList.add('active');
-            else if (view==='studio') document.getElementById('nav-studio').classList.add('active');
-
-            if(view === 'home') {
-                document.getElementById('homeView').style.display = 'block';
-                document.getElementById('pFrame').innerHTML = ''; 
-                if(catFilter) window.filter(catFilter);
-            } else if (view === 'player') {
-                document.getElementById('playerView').style.display = 'block';
-            } else if (view === 'history' || view === 'liked') {
-                document.getElementById('listView').style.display = 'block';
-                document.getElementById('listTitle').innerText = view === 'history' ? "History" : "Liked Videos";
-                loadList(view === 'history' ? 'sya_hist' : 'sya_likes');
-            } else if (view === 'studio') {
-                if(!currentUser) return window.showToast("Sign in required");
-                document.getElementById('studioView').style.display = 'block';
-                loadStudio();
-            }
-            document.getElementById('sidebar').classList.remove('open');
-            document.getElementById('profileMenu').classList.remove('show');
-            document.getElementById('notifDropdown').style.display = 'none';
-        };
-
-        // --- DATA ---
-        onValue(ref(db, 'videos'), snap => {
-            const data = snap.val();
-            allVideos = [];
-            if(data) Object.entries(data).forEach(([k,v]) => allVideos.push({id:k, ...v}));
-            allVideos.reverse();
-            if(document.getElementById('homeView').style.display === 'block') window.filter('All');
-        });
-
-        window.filter = (cat) => {
-            document.querySelectorAll('.chip').forEach(c => {
-                c.classList.remove('active');
-                if(c.innerText === cat) c.classList.add('active');
-            });
-            const grid = document.getElementById('videoGrid');
-            grid.innerHTML = '';
-            
-            const list = cat === 'All' ? allVideos : allVideos.filter(v => v.category === cat);
-            if(list.length === 0) grid.innerHTML = '<div style="color:#666; padding:20px;">No videos found</div>';
-
-            list.forEach(v => {
-                grid.innerHTML += `
-                    <div class="video-card" onclick="window.playVid('${v.id}')">
-                        <div class="thumb-box">${window.getThumb(v.thumbnail, v.url)}</div>
-                        <div class="meta">
-                            <div class="avatar-circle">${window.getAvatar(v.uploaderPic, v.uploader)}</div>
-                            <div class="info"><h3>${v.title}</h3><p>${v.uploader} • ${v.views||0} views</p></div>
-                        </div>
-                    </div>`;
-            });
-        };
-
-        // --- PLAYER ---
-        window.playVid = (id) => {
-            const v = allVideos.find(x => x.id === id);
-            if(!v) return;
-            currentVideoId = id;
-
-            // Update Views (Transaction)
-            runTransaction(ref(db, `videos/${id}/views`), (current) => (current || 0) + 1);
-
-            // Save History
-            let h = JSON.parse(localStorage.getItem('sya_hist')||'[]');
-            h = h.filter(x=>x.id!==id); h.unshift(v);
-            localStorage.setItem('sya_hist', JSON.stringify(h));
-
-            window.nav('player');
-            document.getElementById('pFrame').innerHTML = `<iframe src="${window.getVideoEmbed(v.url)}" allowfullscreen allow="autoplay"></iframe>`;
-            document.getElementById('pTitle').innerText = v.title;
-            document.getElementById('pUser').innerText = v.uploader;
-            document.getElementById('pMeta').innerText = `${(v.views||0)+1} Views • ${v.category}`;
-            document.getElementById('pDesc').innerText = v.description;
-            document.getElementById('pLikes').innerText = v.likes || 0;
-            document.getElementById('pAvatar').innerHTML = window.getAvatar(v.uploaderPic, v.uploader);
-            loadComments(id);
+        window.closeConfirm = (res) => {
+            document.getElementById('confirmModal').style.display = 'none';
+            if (res && confirmCallback) confirmCallback();
+            confirmCallback = null;
         };
 
         // --- AUTH ---
-        window.googleAuth = () => signInWithPopup(auth, provider).then(()=>closeModals());
-        window.emailAuth = () => {
-            const e = document.getElementById('em').value;
-            const p = document.getElementById('pw').value;
-            signInWithEmailAndPassword(auth,e,p).catch(()=>createUserWithEmailAndPassword(auth,e,p).then(()=>closeModals()));
-        };
-        window.userSignOut = () => signOut(auth).then(()=>window.location.reload());
-
-        onAuthStateChanged(auth, user => {
+        onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            const area = document.getElementById('authBtnArea');
-            if(user) {
-                area.innerHTML = `<div class="avatar-circle" onclick="window.toggleProfile()">${window.getAvatar(user.photoURL, user.email)}</div>`;
-                document.getElementById('menuName').innerText = user.displayName || user.email;
-                document.getElementById('menuAvatar').innerHTML = window.getAvatar(user.photoURL, user.email);
-                closeModals();
-                window.addNotification("Welcome back, " + (user.displayName || "User"));
+            renderAuthUI();
+            if (user) {
+                document.getElementById('logoutBtn').style.display = 'flex';
+                loadSubscriptions();
+                document.getElementById('commentUserAvatar').src = getUserAvatar(user.displayName);
+                document.getElementById('commentUserAvatar').style.display = 'block';
             } else {
-                area.innerHTML = `<button class="btn-main" style="padding:6px 12px;" onclick="openModal('authModal')">Sign In</button>`;
+                document.getElementById('logoutBtn').style.display = 'none';
+                els.subsList.innerHTML = '<p style="padding:0 12px; font-size:13px; color:var(--text-light);">Sign in to see subscriptions</p>';
+                document.getElementById('commentUserAvatar').style.display = 'none';
+                if (els.studioOverlay.style.display === 'flex') closeStudio();
             }
         });
 
-        // --- UPLOAD ---
-        window.uploadVideo = () => {
-            if(!currentUser) return window.showToast("Sign in required");
-            push(ref(db, 'videos'), {
-                title: document.getElementById('uTitle').value,
-                category: document.getElementById('uCat').value,
-                thumbnail: document.getElementById('uThumb').value,
-                url: document.getElementById('uUrl').value,
-                description: document.getElementById('uDesc').value,
-                uploader: currentUser.displayName || currentUser.email.split('@')[0],
-                uploaderEmail: currentUser.email,
-                uploaderPic: currentUser.photoURL,
-                views: 0, likes: 0, date: Date.now()
-            });
-            window.closeModals();
-            window.showToast("Uploaded successfully!");
-            window.addNotification("Video Uploaded: " + document.getElementById('uTitle').value);
-        };
-
-        // --- STUDIO ---
-        function loadStudio() {
-            const list = document.getElementById('studioList');
-            list.innerHTML = '';
-            const myVids = allVideos.filter(v => v.uploaderEmail === currentUser.email);
-            let total = 0;
-            const labels = [], data = [];
-
-            // DESTROY OLD CHART TO FIX ERROR
-            if(window.myChart) { window.myChart.destroy(); window.myChart = null; }
-
-            myVids.forEach(v => {
-                total += (v.views||0);
-                labels.push(v.title.substring(0,10));
-                data.push(v.views||0);
-                list.innerHTML += `
-                    <div style="background:#222; padding:10px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <div style="width:60px; height:34px; background:#000; overflow:hidden; border-radius:4px;">${window.getThumb(v.thumbnail, v.url)}</div>
-                            <div style="font-weight:bold; font-size:14px;">${v.title}</div>
-                        </div>
-                        <div style="display:flex; gap:15px; align-items:center;">
-                            <span style="font-size:13px; color:#aaa;">${v.views||0} views</span>
-                            <button onclick="window.delVid('${v.id}')" style="color:#ff4444; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('sTotalViews').innerText = total;
-            
-            // Create Chart
-            const ctx = document.getElementById('studioChart').getContext('2d');
-            window.myChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: labels, datasets: [{ label: 'Views', data: data, backgroundColor: '#6366f1' }] },
-                options: { responsive: true, scales: { y: { beginAtZero: true, grid: {color:'#333'} }, x:{display:false} } }
-            });
+        function renderAuthUI() {
+            if (currentUser) {
+                const letter = (currentUser.displayName || currentUser.email).charAt(0).toUpperCase();
+                // If user has a photoURL, use it; otherwise use the letter
+                let content = letter;
+                if (currentUser.photoURL) {
+                    content = `<img src="${currentUser.photoURL}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                }
+                els.authContainer.innerHTML = `<button class="avatar-btn" onclick="toggleProfileDropdown()">${content}</button>`;
+            } else {
+                els.authContainer.innerHTML = `<button class="auth-btn" onclick="openAuthModal()"><span class="material-symbols-rounded">account_circle</span> Sign in</button>`;
+            }
         }
 
-        window.delVid = (id) => {
-            if(confirm("Delete video?")) { remove(ref(db, `videos/${id}`)); setTimeout(loadStudio, 500); window.showToast("Deleted"); }
+        window.toggleProfileDropdown = () => {
+            const d = document.getElementById('profileDropdown');
+            d.style.display = d.style.display === 'flex' ? 'none' : 'flex';
         };
 
-        // --- COMMENTS & LIKES ---
-        window.postComment = () => {
-            if(!currentUser) return window.showToast("Sign in required");
-            const t = document.getElementById('comInp').value;
-            if(t) {
-                push(ref(db, `comments/${currentVideoId}`), { user:currentUser.displayName||'User', text:t, pic:currentUser.photoURL });
-                document.getElementById('comInp').value = '';
-                window.showToast("Comment posted");
+        // Close dropdowns when clicking outside
+        window.onclick = (e) => {
+            if (!e.target.closest('.icon-btn') && !e.target.closest('.notif-dropdown')) {
+                document.getElementById('notifDropdown').style.display = 'none';
+            }
+            if (!e.target.closest('.avatar-btn') && !e.target.closest('.profile-dropdown')) {
+                document.getElementById('profileDropdown').style.display = 'none';
             }
         };
 
-        function loadComments(id) {
-            const l = document.getElementById('commentsList');
-            onValue(ref(db, `comments/${id}`), s => {
-                l.innerHTML = '';
-                const d = s.val();
-                if(d) Object.values(d).forEach(c => {
-                    l.innerHTML += `<div style="display:flex; gap:10px; margin-bottom:15px;"><div class="avatar-circle" style="width:28px; height:28px; font-size:10px;">${window.getAvatar(c.pic, c.user)}</div><div><div style="font-weight:bold; font-size:12px; color:#ccc;">${c.user}</div><div style="font-size:14px;">${c.text}</div></div></div>`;
+        window.handleLogout = () => showConfirm("Sign out?", () => { signOut(auth); goHome(); });
+
+        // --- PROFILE & CHANNEL LOGIC ---
+        window.openEditProfile = () => {
+            if (!currentUser) return;
+            document.getElementById('editChannelName').value = currentUser.displayName || "";
+            document.getElementById('editProfilePic').value = currentUser.photoURL || "";
+            document.getElementById('profileDropdown').style.display = 'none';
+            document.getElementById('editProfileModal').classList.add('open');
+        };
+
+        window.saveProfile = async () => {
+            const name = document.getElementById('editChannelName').value;
+            const pic = document.getElementById('editProfilePic').value;
+            if (!name) return showToast("Name is required", "error");
+
+            try {
+                await updateProfile(currentUser, { displayName: name, photoURL: pic });
+                // Also update in database for consistency
+                await update(ref(db, `users/${currentUser.uid}`), {
+                    displayName: name,
+                    photoURL: pic,
+                    email: currentUser.email
                 });
+
+                // UPDATE ALL USER'S VIDEOS with new name/pic
+                if (allVideos) {
+                    const updates = {};
+                    Object.entries(allVideos).forEach(([vidId, vidData]) => {
+                        if (vidData.uid === currentUser.uid) {
+                            updates[`videos/${vidId}/uploader`] = name;
+                            updates[`videos/${vidId}/uploaderPic`] = pic;
+                        }
+                    });
+                    if (Object.keys(updates).length > 0) {
+                        await update(ref(db), updates);
+                    }
+                }
+
+                showToast("Profile Updated!", "success");
+                closeModal('editProfileModal');
+                renderAuthUI();
+
+                // Refresh comments avatar if any
+                document.getElementById('commentUserAvatar').src = getUserAvatar(name);
+            } catch (e) {
+                showToast(e.message, "error");
+            }
+        };
+
+        let currentChannelUid = null;
+
+        window.openChannelPage = async (uid) => {
+            currentChannelUid = uid;
+            document.getElementById('channelOverlay').style.display = 'block';
+            document.getElementById('profileDropdown').style.display = 'none';
+
+            // fetch user data
+            let name = "User";
+            let pic = "";
+
+            const userSnap = await get(ref(db, `users/${uid}`));
+            if (userSnap.exists()) {
+                const d = userSnap.val();
+                name = d.displayName || name;
+                pic = d.photoURL || "";
+            }
+
+            // Fallback: if own channel
+            if (currentUser && uid === currentUser.uid) {
+                if (name === "User" && currentUser.displayName) name = currentUser.displayName;
+                if (!pic && currentUser.photoURL) pic = currentUser.photoURL;
+            }
+
+            // Fallback: try to find from videos if still default
+            if (name === "User") {
+                const vid = Object.values(allVideos).find(v => v.uid === uid);
+                if (vid && vid.uploader) name = vid.uploader;
+            }
+
+            document.getElementById('channelPageName').innerText = name;
+            const avatarEl = document.getElementById('channelPageAvatar');
+            if (pic) {
+                avatarEl.innerHTML = `<img src="${pic}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            } else {
+                avatarEl.innerHTML = name.charAt(0).toUpperCase();
+            }
+
+            // fetch stats & videos (Genuine)
+            let videoCount = 0;
+            let subCount = 0;
+
+            // Subs
+            const subsSnap = await get(ref(db, `users/${uid}/subscribers`));
+            if (subsSnap.exists()) subCount = Object.keys(subsSnap.val()).length;
+            document.getElementById('channelPageSubs').innerText = subCount;
+
+            // Updated Sub Button state
+            updateChannelSubButton(uid);
+
+            // Videos
+            const grid = document.getElementById('channelVideoGrid');
+            grid.innerHTML = '';
+
+            Object.entries(allVideos).forEach(([id, v]) => {
+                if (v.uid === uid) {
+                    videoCount++;
+                    grid.appendChild(createCard(id, v));
+                }
+            });
+            document.getElementById('channelPageVideos').innerText = videoCount;
+        };
+
+        window.openMyChannel = () => {
+            if (!currentUser) return openAuthModal();
+            openChannelPage(currentUser.uid);
+        };
+
+        window.closeChannel = () => {
+            document.getElementById('channelOverlay').style.display = 'none';
+        };
+
+        function updateChannelSubButton(uid) {
+            const btn = document.getElementById('channelSubBtn');
+            if (currentUser && uid === currentUser.uid) {
+                btn.style.display = 'none'; // hide if own channel
+                return;
+            }
+            btn.style.display = 'inline-block';
+
+            if (currentUser) {
+                get(ref(db, `users/${currentUser.uid}/subscriptions/${uid}`)).then(s => {
+                    if (s.exists()) {
+                        btn.innerText = "Subscribed";
+                        btn.style.background = "var(--secondary)";
+                        btn.style.color = "var(--text-main)";
+                    } else {
+                        btn.innerText = "Subscribe";
+                        btn.style.background = "white";
+                        btn.style.color = "var(--primary)";
+                    }
+                });
+            }
+        }
+
+        window.toggleChannelSubscribe = () => {
+            if (!currentUser) return openAuthModal();
+            if (!currentChannelUid) return;
+            if (currentChannelUid === currentUser.uid) return;
+
+            const subRef = ref(db, `users/${currentUser.uid}/subscriptions/${currentChannelUid}`);
+            const subscriberRef = ref(db, `users/${currentChannelUid}/subscribers/${currentUser.uid}`);
+
+            // Get channel name for local storage
+            const name = document.getElementById('channelPageName').innerText;
+
+            get(subRef).then(s => {
+                if (s.exists()) {
+                    remove(subRef);
+                    remove(subscriberRef);
+                    showToast("Unsubscribed", 'info');
+                    // Update count locally for immediate feedback
+                    let c = parseInt(document.getElementById('channelPageSubs').innerText);
+                    document.getElementById('channelPageSubs').innerText = Math.max(0, c - 1);
+                } else {
+                    set(subRef, { name: name, time: Date.now() });
+                    set(subscriberRef, { name: currentUser.displayName, time: Date.now() });
+                    showToast("Subscribed!", 'success');
+                    let c = parseInt(document.getElementById('channelPageSubs').innerText);
+                    document.getElementById('channelPageSubs').innerText = c + 1;
+                }
+                updateChannelSubButton(currentChannelUid);
+            });
+        };
+
+        // --- NOTIFICATIONS ---
+        window.toggleNotif = () => {
+            const disp = els.notifDropdown.style.display;
+            els.notifDropdown.style.display = disp === 'flex' ? 'none' : 'flex';
+            if (els.notifDropdown.style.display === 'flex') els.notifBadge.style.display = 'none';
+        };
+
+        function updateNotifications() {
+            if (recentVideos.length > 0) {
+                els.notifList.innerHTML = recentVideos.map(v => `
+                    <div class="notif-item" onclick="openWatch('${v.id}')">
+                        <img src="${v.thumbnail}" class="notif-thumb" onerror="this.src='https://via.placeholder.com/60x34'">
+                        <div class="notif-text">
+                            <div class="notif-title">${v.title}</div>
+                        </div>
+                    </div>
+                `).join('');
+                els.notifBadge.style.display = 'block';
+            } else {
+                els.notifList.innerHTML = '<div style="padding:16px; text-align:center;">No new notifications</div>';
+                els.notifBadge.style.display = 'none';
+            }
+        }
+
+        // Load Videos & Users
+        onValue(ref(db, 'users'), (snapshot) => {
+            allUsers = snapshot.val() || {};
+            if (Object.keys(allVideos).length > 0) renderGrid(allVideos); // Re-render if users change
+        });
+
+        onValue(ref(db, 'videos'), (snapshot) => {
+            allVideos = snapshot.val() || {};
+            renderGrid(allVideos);
+            recentVideos = Object.entries(allVideos).slice(-5).reverse().map(([id, v]) => ({ ...v, id }));
+            updateNotifications();
+            updateStudioData();
+        });
+
+        function renderGrid(videos) {
+            els.videoGrid.innerHTML = '';
+            const filtered = Object.entries(videos).filter(([id, v]) => {
+                if (currentCategory === 'All') return true;
+                return (v.title + v.description).toLowerCase().includes(currentCategory.toLowerCase());
+            }).reverse();
+
+            filtered.forEach(([id, v]) => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.onclick = () => openWatch(id);
+                card.innerHTML = `
+                    <div class="thumbnail">
+                        <img src="${v.thumbnail}" loading="lazy" onerror="this.src='https://via.placeholder.com/320x180?text=No+Img'">
+                        <span class="duration">${v.duration || '0:00'}</span>
+                    </div>
+                    <div class="meta">
+                        <img src="${getUserAvatar(v.uploader)}" class="meta-avatar">
+                        <div class="meta-text">
+                            <h4 class="video-title">${v.title}</h4>
+                            <p class="channel-name">${v.uploader}</p>
+                            <p class="video-stats">${formatViews(v.views || 0)} views • ${timeAgo(v.timestamp)}</p>
+                        </div>
+                    </div>
+                `;
+                els.videoGrid.appendChild(card);
             });
         }
 
-        window.handleLike = () => {
-            if(!currentVideoId) return;
-            let l = JSON.parse(localStorage.getItem('sya_likes')||'[]');
-            const v = allVideos.find(x=>x.id===currentVideoId);
-            if(l.find(x=>x.id===currentVideoId)) { l = l.filter(x=>x.id!==currentVideoId); window.showToast("Unliked"); }
-            else { l.unshift(v); window.showToast("Liked"); }
-            localStorage.setItem('sya_likes', JSON.stringify(l));
+        // --- VIDEO PLAYER (Robust Embed Converter) ---
+        function convertToEmbed(url) {
+            if (url.includes('drive.google.com')) return url.replace('/view', '/preview');
+
+            // Handles shorts, mobile, standard, embed links, and timestamps
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+
+            if (match && match[2].length === 11) {
+                // Use standard youtube.com embed
+                return `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`;
+            }
+            // Try standard ID extraction if length != 11 but looks like ID
+            if (match && match[2].length > 5) {
+                return `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`;
+            }
+            return url;
+        }
+
+        window.openWatch = (id) => {
+            if (!allVideos[id]) return;
+            currentVideoId = id;
+            const v = allVideos[id];
+            els.watchOverlay.style.display = 'block';
+
+            document.getElementById('watchTitle').innerText = v.title;
+            document.getElementById('watchDesc').innerText = v.description;
+
+            // FETCH LATEST CHANNEL INFO
+            const channelNameEl = document.getElementById('watchChannelName');
+            const channelAvatarEl = document.getElementById('watchChannelAvatar');
+
+            // Default from video data first (fast load)
+            const videoUploaderName = v.uploader || "User";
+            const videoUploaderPic = v.uploaderPic || "";
+
+            channelNameEl.innerText = videoUploaderName;
+            channelAvatarEl.src = videoUploaderPic || getUserAvatar(videoUploaderName);
+
+            // Then fetch fresh data from DB
+            get(ref(db, `users/${v.uid}`)).then(snap => {
+                if (snap.exists()) {
+                    const u = snap.val();
+                    const liveName = u.displayName || videoUploaderName;
+                    const livePic = u.photoURL || videoUploaderPic;
+
+                    channelNameEl.innerText = liveName;
+                    channelAvatarEl.src = livePic || getUserAvatar(liveName);
+                }
+            });
+
+            // Make channel info clickable
+            channelNameEl.onclick = () => openChannelPage(v.uid);
+            channelNameEl.style.cursor = 'pointer';
+
+            document.getElementById('watchViews').innerText = `${formatViews(v.views || 0)} views`;
+            document.getElementById('watchDate').innerText = timeAgo(v.timestamp);
+
+            channelAvatarEl.onclick = () => openChannelPage(v.uid);
+            channelAvatarEl.style.cursor = 'pointer';
+
+            const embedUrl = convertToEmbed(v.videoUrl);
+
+            // Optimized for GitHub Pages hosting
+            els.playerContainer.innerHTML = `<iframe 
+                src="${embedUrl}" 
+                title="Video player" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowfullscreen
+                style="width: 100%; height: 100%;"
+            ></iframe>`;
+
+            runTransaction(ref(db, `videos/${id}/views`), (views) => (views || 0) + 1);
+            if (currentUser) push(ref(db, `users/${currentUser.uid}/history`), { videoId: id, timestamp: Date.now() });
+
+            updateLikeButton();
+            updateSubButton(v.uid);
+            loadComments(id);
+            els.notifDropdown.style.display = 'none';
         };
 
-        window.loadList = (key) => {
-            const d = JSON.parse(localStorage.getItem(key)||'[]');
-            const g = document.getElementById('listGrid');
-            g.innerHTML = '';
-            if(d.length===0) g.innerHTML = '<div style="color:#666; padding:20px;">Nothing here.</div>';
-            d.forEach(v => {
-                g.innerHTML += `
-                    <div class="video-card" onclick="window.playVid('${v.id}')">
-                        <div class="thumb-box">${window.getThumb(v.thumbnail, v.url)}</div>
-                        <div class="meta"><div class="info"><h3>${v.title}</h3></div></div>
-                    </div>`;
+        window.closeWatch = () => { els.watchOverlay.style.display = 'none'; els.playerContainer.innerHTML = ''; };
+
+        // --- STUDIO & EDIT FEATURE ---
+        window.openStudio = () => {
+            if (!currentUser) return openAuthModal();
+            els.studioOverlay.style.display = 'flex';
+            updateStudioData();
+        };
+        window.closeStudio = () => els.studioOverlay.style.display = 'none';
+
+        function updateStudioData() {
+            if (!currentUser || els.studioOverlay.style.display !== 'flex') return;
+            let myVideos = [], totalViews = 0;
+            Object.entries(allVideos).forEach(([id, v]) => {
+                if (v.uid === currentUser.uid) { myVideos.push({ ...v, id }); totalViews += (v.views || 0); }
+            });
+            document.getElementById('studioTotalVideos').innerText = myVideos.length;
+            document.getElementById('studioTotalViews').innerText = formatViews(totalViews);
+
+            // Genuine Subscriber Count
+            get(ref(db, `users/${currentUser.uid}/subscribers`)).then(s => {
+                document.getElementById('studioTotalSubs').innerText = s.exists() ? Object.keys(s.val()).length : 0;
+            });
+            els.studioList.innerHTML = myVideos.map(v => `
+                <tr>
+                    <td><div style="display:flex; gap:10px; align-items:center;"><img src="${v.thumbnail}" style="width:50px; height:30px; object-fit:cover;"><span>${v.title}</span></div></td>
+                    <td>${new Date(v.timestamp).toLocaleDateString()}</td>
+                    <td>${v.views}</td>
+                    <td>
+                        <button class="tbl-btn" onclick="openEditModal('${v.id}')" title="Edit"><span class="material-symbols-rounded" style="color:var(--primary);">edit</span></button>
+                        <button class="tbl-btn" onclick="deleteVideo('${v.id}')" title="Delete"><span class="material-symbols-rounded" style="color:var(--error);">delete</span></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.deleteVideo = (id) => showConfirm("Delete permanently?", () => remove(ref(db, `videos/${id}`)).then(() => showToast("Deleted", "success")));
+
+        // --- UPLOAD & EDIT LOGIC ---
+        window.openUploadModal = () => {
+            if (!currentUser) return openAuthModal();
+            isEditMode = false;
+            els.uploadModalTitle.innerText = "Upload Video";
+            ['vidTitle', 'vidThumb', 'vidUrl', 'vidDesc'].forEach(i => document.getElementById(i).value = '');
+            document.getElementById('uploadModal').classList.add('open');
+        };
+
+        window.openEditModal = (id) => {
+            const v = allVideos[id];
+            if (!v) return;
+            isEditMode = true;
+            currentEditId = id;
+            els.uploadModalTitle.innerText = "Edit Video";
+            document.getElementById('vidTitle').value = v.title;
+            document.getElementById('vidThumb').value = v.thumbnail;
+            document.getElementById('vidUrl').value = v.videoUrl;
+            document.getElementById('vidDesc').value = v.description;
+            document.getElementById('uploadModal').classList.add('open');
+        };
+
+        window.submitVideo = () => {
+            const title = document.getElementById('vidTitle').value;
+            const url = document.getElementById('vidUrl').value;
+            if (!title || !url) return showToast("Title & URL required", 'error');
+
+            const data = {
+                title, thumbnail: document.getElementById('vidThumb').value, videoUrl: url,
+                description: document.getElementById('vidDesc').value,
+                uploader: currentUser.displayName || "User",
+                uploaderPic: currentUser.photoURL || "",
+                uid: currentUser.uid
+            };
+
+            if (isEditMode) {
+                update(ref(db, `videos/${currentEditId}`), data).then(() => {
+                    closeModal('uploadModal'); showToast("Video Updated!", "success");
+                });
+            } else {
+                data.views = 0; data.timestamp = Date.now(); data.duration = "New";
+                push(ref(db, 'videos'), data).then(() => {
+                    closeModal('uploadModal'); showToast("Video Uploaded!", "success");
+                });
+            }
+        };
+
+        // --- HELPERS ---
+        window.openAuthModal = () => els.authModal.classList.add('open');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('open');
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authTitle').innerText = isLoginMode ? 'Sign In' : 'Register';
+            document.getElementById('authToggleText').innerText = isLoginMode ? 'Create an account' : 'Sign in';
+        };
+
+        window.handleAuthSubmit = async () => {
+            const email = document.getElementById('authEmail').value;
+            const pass = document.getElementById('authPass').value;
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else {
+                    const res = await createUserWithEmailAndPassword(auth, email, pass);
+                    const name = email.split('@')[0];
+                    await updateProfile(res.user, { displayName: name });
+                    // Initialize user in DB
+                    await update(ref(db, `users/${res.user.uid}`), {
+                        displayName: name,
+                        email: email,
+                        photoURL: ""
+                    });
+                }
+                closeModal('authModal'); showToast("Welcome back!", "success");
+            } catch (err) { showToast(err.message, "error"); }
+        };
+
+        window.handleGoogleAuth = async () => {
+            try {
+                const res = await signInWithPopup(auth, provider);
+                // Sync Google user to DB
+                await update(ref(db, `users/${res.user.uid}`), {
+                    displayName: res.user.displayName,
+                    email: res.user.email,
+                    photoURL: res.user.photoURL
+                });
+                closeModal('authModal'); showToast("Signed in", "success");
+            } catch (e) { console.error(e); }
+        };
+
+        window.toggleSidebar = () => window.innerWidth <= 768 ? document.getElementById('sidebar').classList.toggle('mobile-open') : document.body.classList.toggle('mini-sidebar');
+        window.toggleTheme = () => document.body.classList.toggle('dark-mode');
+        window.toggleMobileSearch = () => document.getElementById('mobileSearch').classList.toggle('active');
+        window.handleSearch = (e) => {
+            if (e.key === 'Enter') {
+                const q = (e.target.value || document.getElementById('searchInput').value).toLowerCase();
+                currentCategory = q; renderGrid(allVideos); document.getElementById('mobileSearch').classList.remove('active');
+            }
+        };
+        window.filterCategory = (cat) => {
+            currentCategory = cat;
+            document.querySelectorAll('.bubble').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active'); renderGrid(allVideos);
+            els.watchOverlay.style.display = 'none';
+        };
+        window.goHome = () => {
+            els.watchOverlay.style.display = 'none'; els.playerContainer.innerHTML = '';
+            currentCategory = 'All'; renderGrid(allVideos);
+        };
+        window.openAnalytics = async () => {
+            if (!currentUser) return openAuthModal();
+            document.getElementById('analyticsModal').classList.add('open');
+            if (chartV) chartV.destroy();
+            if (chartE) chartE.destroy();
+
+            // Get genuine data from Firebase
+            let myVideos = [];
+            Object.entries(allVideos).forEach(([id, v]) => {
+                if (v.uid === currentUser.uid) {
+                    myVideos.push({ ...v, id });
+                }
+            });
+
+            // Calculate genuine views for last 7 days
+            const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const today = new Date();
+            const viewsByDay = [0, 0, 0, 0, 0, 0, 0];
+
+            // Get all views from history
+            const historySnapshot = await get(ref(db, 'users'));
+            const allUsers = historySnapshot.val() || {};
+
+            // Count views per day from user history
+            Object.values(allUsers).forEach(user => {
+                if (user.history) {
+                    Object.values(user.history).forEach(historyItem => {
+                        const videoData = allVideos[historyItem.videoId];
+                        if (videoData && videoData.uid === currentUser.uid) {
+                            const viewDate = new Date(historyItem.timestamp);
+                            const daysAgo = Math.floor((today - viewDate) / (1000 * 60 * 60 * 24));
+                            if (daysAgo < 7) {
+                                const dayIndex = (today.getDay() - daysAgo + 7) % 7;
+                                viewsByDay[dayIndex]++;
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Calculate genuine engagement (likes and comments)
+            let totalLikes = 0;
+            let totalComments = 0;
+
+            // Count likes
+            const likesSnapshot = await get(ref(db, 'likes'));
+            const allLikes = likesSnapshot.val() || {};
+            myVideos.forEach(video => {
+                if (allLikes[video.id]) {
+                    totalLikes += Object.keys(allLikes[video.id]).length;
+                }
+            });
+
+            // Count comments
+            const commentsSnapshot = await get(ref(db, 'comments'));
+            const allComments = commentsSnapshot.val() || {};
+            myVideos.forEach(video => {
+                if (allComments[video.id]) {
+                    totalComments += Object.keys(allComments[video.id]).length;
+                }
+            });
+
+            // Create genuine views chart
+            chartV = new Chart(document.getElementById('viewsChart'), {
+                type: 'line',
+                data: {
+                    labels: dayLabels,
+                    datasets: [{
+                        label: 'Views',
+                        data: viewsByDay,
+                        borderColor: '#3ea6ff',
+                        backgroundColor: 'rgba(62, 166, 255, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+
+            // Create genuine engagement chart
+            chartE = new Chart(document.getElementById('engChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Likes', 'Comments'],
+                    datasets: [{
+                        data: [totalLikes, totalComments],
+                        backgroundColor: ['#3ea6ff', '#2ba640']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
             });
         };
+        window.openHistory = () => {
+            if (!currentUser) return openAuthModal();
+            els.watchOverlay.style.display = 'none';
+            els.videoGrid.innerHTML = '';
+            get(ref(db, `users/${currentUser.uid}/history`)).then(snap => {
+                const h = snap.val(); if (!h) return els.videoGrid.innerHTML = 'No history.';
+                Object.values(h).reverse().forEach(x => { if (allVideos[x.videoId]) els.videoGrid.appendChild(createCard(x.videoId, allVideos[x.videoId])); });
+            });
+        };
+        window.openLiked = () => {
+            if (!currentUser) return openAuthModal();
+            els.watchOverlay.style.display = 'none';
+            els.videoGrid.innerHTML = '';
+            get(ref(db, 'likes')).then(snap => {
+                const l = snap.val() || {};
+                Object.keys(l).forEach(vid => { if (l[vid][currentUser.uid] && allVideos[vid]) els.videoGrid.appendChild(createCard(vid, allVideos[vid])); });
+            });
+        };
+        function createCard(id, v) {
+            const c = document.createElement('div'); c.className = 'video-card'; c.onclick = () => openWatch(id);
 
-        window.nav('home');
+            // Initial Data (Stale/Snapshot)
+            let uName = v.uploader || "User";
+            let uPic = v.uploaderPic || "";
+
+            // Fast check: Current User
+            if (currentUser && v.uid === currentUser.uid) {
+                uName = currentUser.displayName || uName;
+                uPic = currentUser.photoURL || uPic;
+            } else if (allUsers[v.uid]) {
+                // Fast check: Global Cache
+                const u = allUsers[v.uid];
+                uName = u.displayName || uName;
+                uPic = u.photoURL || uPic;
+            }
+
+            const avatarSrc = uPic ? uPic : getUserAvatar(uName);
+
+            // Unique IDs for live update
+            const nameId = `name-${id}`;
+            const picId = `pic-${id}`;
+
+            c.innerHTML = `
+                <div class="thumbnail">
+                    <img src="${v.thumbnail}" loading="lazy">
+                    <span class="duration">New</span>
+                </div>
+                <div class="meta">
+                    <img id="${picId}" src="${avatarSrc}" class="meta-avatar" style="object-fit:cover;">
+                    <div class="meta-text">
+                        <h4 class="video-title">${v.title}</h4>
+                        <div style="font-size:12px; color:var(--text-light); margin-top:4px;">
+                            <p id="${nameId}" class="channel-name" style="margin-bottom:2px;">${uName}</p>
+                            <span>${formatViews(v.views || 0)} views • ${timeAgo(v.timestamp)}</span>
+                        </div>
+                    </div>
+                </div>`;
+
+            // ASYNC LIVE UPDATE (The Fix)
+            // Fetch this specific user's latest data and update DOM in-place
+            get(ref(db, `users/${v.uid}`)).then(snap => {
+                if (snap.exists()) {
+                    const u = snap.val();
+                    const liveName = u.displayName || "User";
+                    const livePic = u.photoURL || "";
+
+                    // Update Name
+                    const nameEl = document.getElementById(nameId);
+                    if (nameEl) nameEl.innerText = liveName;
+
+                    // Update Pic
+                    const picEl = document.getElementById(picId);
+                    if (picEl) {
+                        picEl.src = livePic ? livePic : getUserAvatar(liveName);
+                    }
+                }
+            });
+
+            return c;
+        }
+
+        // Sub/Like/Comment Logic (Simplified for brevity but functional)
+        window.toggleSubscribe = () => {
+            if (!currentUser) return openAuthModal();
+            const v = allVideos[currentVideoId];
+            if (!v) return;
+            const targetUid = v.uid;
+
+            if (targetUid === currentUser.uid) return showToast("Cannot sub to self", 'error');
+
+            const subRef = ref(db, `users/${currentUser.uid}/subscriptions/${targetUid}`);
+            const subscriberRef = ref(db, `users/${targetUid}/subscribers/${currentUser.uid}`);
+
+            get(subRef).then(s => {
+                if (s.exists()) {
+                    remove(subRef);
+                    remove(subscriberRef);
+                    showToast("Unsubscribed", 'info');
+                } else {
+                    set(subRef, { name: v.uploader, time: Date.now() });
+                    set(subscriberRef, { name: currentUser.displayName, time: Date.now() });
+                    showToast("Subscribed!", 'success');
+                }
+                updateSubButton(targetUid);
+            });
+        };
+        function updateSubButton(targetUid) {
+            const b = document.getElementById('subBtn');
+            if (currentUser && targetUid) {
+                get(ref(db, `users/${currentUser.uid}/subscriptions/${targetUid}`)).then(s => {
+                    if (s.exists()) {
+                        b.innerText = "Subscribed";
+                        b.style.background = "var(--secondary)";
+                        b.style.color = "var(--text-main)";
+                    } else {
+                        b.innerText = "Subscribe";
+                        b.style.background = "var(--black)";
+                        b.style.color = "var(--bg-body)";
+                    }
+                });
+            }
+        }
+        window.toggleLike = () => {
+            if (!currentUser) return openAuthModal();
+            const r = ref(db, `likes/${currentVideoId}/${currentUser.uid}`);
+            get(r).then(s => s.exists() ? remove(r) : set(r, true)).then(updateLikeButton);
+        };
+        function updateLikeButton() {
+            if (!currentVideoId) return;
+            const btn = document.getElementById('likeBtn');
+            const icon = btn.querySelector('span');
+
+            onValue(ref(db, `likes/${currentVideoId}`), s => {
+                const likes = s.val() || {};
+                const count = Object.keys(likes).length;
+                document.getElementById('likeCount').innerText = count;
+
+                if (currentUser && likes[currentUser.uid]) {
+                    icon.style.color = 'var(--primary)'; // Blue
+                    icon.style.fontVariationSettings = "'FILL' 1";
+                } else {
+                    icon.style.color = 'var(--text-main)';
+                    icon.style.fontVariationSettings = "'FILL' 0";
+                }
+            }, { onlyOnce: true });
+        }
+        window.postComment = () => {
+            if (!currentUser) return openAuthModal();
+            const t = document.getElementById('commentInput').value;
+            if (t) push(ref(db, `comments/${currentVideoId}`), { text: t, user: currentUser.displayName, time: Date.now() });
+            document.getElementById('commentInput').value = '';
+        };
+        function loadComments(id) {
+            onValue(ref(db, `comments/${id}`), s => {
+                els.commentList.innerHTML = Object.values(s.val() || {}).reverse().map(c => `
+                    <div style="display:flex; gap:10px;"><img src="${getUserAvatar(c.user)}" class="meta-avatar">
+                    <div><div style="font-size:12px; font-weight:600;">${c.user} <span style="font-weight:400; color:gray;">${timeAgo(c.time)}</span></div>
+                    <div style="font-size:14px;">${c.text}</div></div></div>`).join('');
+            });
+        }
+
+        function formatViews(n) { return n >= 1000 ? (n / 1000).toFixed(1) + 'K' : n; }
+        function timeAgo(d) {
+            const s = Math.floor((new Date() - d) / 1000);
+            if (s > 86400) return Math.floor(s / 86400) + " days ago";
+            if (s > 3600) return Math.floor(s / 3600) + " hours ago";
+            return "Just now";
+        }
+        function getUserAvatar(n) { return `https://ui-avatars.com/api/?name=${n}&background=random&color=fff`; }
+
+        // Exports
+        window.remove = remove; window.ref = ref; window.db = db;
+
+        // Load subs (genuine)
+        // Load subs (genuine) and fetch LIVE user data
+        function loadSubscriptions() {
+            if (!currentUser) return;
+            onValue(ref(db, `users/${currentUser.uid}/subscriptions`), async (s) => {
+                const subs = s.val() || {};
+                const uids = Object.keys(subs);
+
+                if (uids.length === 0) {
+                    els.subsList.innerHTML = '<p style="padding:0 12px; font-size:13px; color:var(--text-light);">No subscriptions.</p>';
+                    return;
+                }
+
+                const subItems = await Promise.all(uids.map(async (uid) => {
+                    // Fetch latest profile for this channel
+                    const userSnap = await get(ref(db, `users/${uid}`));
+                    let name = "User";
+                    let pic = "";
+
+                    if (userSnap.exists()) {
+                        const val = userSnap.val();
+                        name = val.displayName || "User";
+                        pic = val.photoURL || "";
+                    } else {
+                        // Fallback to stored name if user deleted/missing
+                        name = subs[uid].name || "User";
+                    }
+
+                    // Determine avatar
+                    const avatarContent = pic
+                        ? `<img src="${pic}" style="width:24px; height:24px; border-radius:50%; margin-right:12px; object-fit:cover;">`
+                        : `<img src="${getUserAvatar(name)}" style="width:24px; height:24px; border-radius:50%; margin-right:12px;">`;
+
+                    return `
+                    <div class="sidebar-item" onclick="openChannelPage('${uid}')" style="padding: 0 12px; height: 30px;">
+                        ${avatarContent}
+                        <p style="font-size:14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</p>
+                    </div>`;
+                }));
+
+                els.subsList.innerHTML = subItems.join('');
+            });
+        }
     </script>
 </body>
+
 </html>
