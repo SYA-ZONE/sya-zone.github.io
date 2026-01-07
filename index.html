@@ -1398,7 +1398,7 @@
         // State
         let currentUser = null;
         let allVideos = {};
-        let allUsers = {}; // New state for live user data
+        let allUsers = {}; // Cache for user profiles
         let currentVideoId = null;
         let isLoginMode = true;
         let chartV = null, chartE = null;
@@ -1468,7 +1468,6 @@
         function renderAuthUI() {
             if (currentUser) {
                 const letter = (currentUser.displayName || currentUser.email).charAt(0).toUpperCase();
-                // If user has a photoURL, use it; otherwise use the letter
                 let content = letter;
                 if (currentUser.photoURL) {
                     content = `<img src="${currentUser.photoURL}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
@@ -1512,7 +1511,7 @@
 
             try {
                 await updateProfile(currentUser, { displayName: name, photoURL: pic });
-                // Also update in database for consistency
+                // Update in database for consistency
                 await update(ref(db, `users/${currentUser.uid}`), {
                     displayName: name,
                     photoURL: pic,
@@ -1536,6 +1535,9 @@
                 showToast("Profile Updated!", "success");
                 closeModal('editProfileModal');
                 renderAuthUI();
+                
+                // Refresh the grid to show updated info
+                renderGrid(allVideos);
 
                 // Refresh comments avatar if any
                 document.getElementById('commentUserAvatar').src = getUserAvatar(name);
@@ -1693,12 +1695,16 @@
             }
         }
 
-        // Load Videos & Users
+        // Load Users - this listener keeps allUsers cache updated
         onValue(ref(db, 'users'), (snapshot) => {
             allUsers = snapshot.val() || {};
-            if (Object.keys(allVideos).length > 0) renderGrid(allVideos); // Re-render if users change
+            // Re-render grid when users data changes (profile updates)
+            if (Object.keys(allVideos).length > 0) {
+                renderGrid(allVideos);
+            }
         });
 
+        // Load Videos
         onValue(ref(db, 'videos'), (snapshot) => {
             allVideos = snapshot.val() || {};
             renderGrid(allVideos);
@@ -1707,6 +1713,7 @@
             updateStudioData();
         });
 
+        // FIXED: renderGrid now properly fetches and displays the latest user profile data
         function renderGrid(videos) {
             els.videoGrid.innerHTML = '';
             const filtered = Object.entries(videos).filter(([id, v]) => {
@@ -1715,6 +1722,30 @@
             }).reverse();
 
             filtered.forEach(([id, v]) => {
+                // Create unique IDs for async DOM updates
+                const nameId = `grid-name-${id}`;
+                const picId = `grid-pic-${id}`;
+
+                // Get initial data from video or cache
+                let uploaderName = v.uploader || "User";
+                let uploaderPic = v.uploaderPic || "";
+
+                // Check allUsers cache first (faster than async fetch)
+                if (allUsers[v.uid]) {
+                    const cachedUser = allUsers[v.uid];
+                    uploaderName = cachedUser.displayName || uploaderName;
+                    uploaderPic = cachedUser.photoURL || uploaderPic;
+                }
+
+                // Check if it's current user's video
+                if (currentUser && v.uid === currentUser.uid) {
+                    uploaderName = currentUser.displayName || uploaderName;
+                    uploaderPic = currentUser.photoURL || uploaderPic;
+                }
+
+                // Determine avatar source
+                const avatarSrc = uploaderPic ? uploaderPic : getUserAvatar(uploaderName);
+
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 card.onclick = () => openWatch(id);
@@ -1724,15 +1755,39 @@
                         <span class="duration">${v.duration || '0:00'}</span>
                     </div>
                     <div class="meta">
-                        <img src="${getUserAvatar(v.uploader)}" class="meta-avatar">
+                        <img id="${picId}" src="${avatarSrc}" class="meta-avatar" style="object-fit:cover;">
                         <div class="meta-text">
                             <h4 class="video-title">${v.title}</h4>
-                            <p class="channel-name">${v.uploader}</p>
+                            <p id="${nameId}" class="channel-name">${uploaderName}</p>
                             <p class="video-stats">${formatViews(v.views || 0)} views • ${timeAgo(v.timestamp)}</p>
                         </div>
                     </div>
                 `;
                 els.videoGrid.appendChild(card);
+
+                // ASYNC: Fetch latest user profile data from database and update DOM
+                get(ref(db, `users/${v.uid}`)).then(snap => {
+                    if (snap.exists()) {
+                        const userData = snap.val();
+                        const liveName = userData.displayName || "User";
+                        const livePic = userData.photoURL || "";
+
+                        // Update the channel name element
+                        const nameEl = document.getElementById(nameId);
+                        if (nameEl && nameEl.innerText !== liveName) {
+                            nameEl.innerText = liveName;
+                        }
+
+                        // Update the avatar element
+                        const picEl = document.getElementById(picId);
+                        if (picEl) {
+                            const newSrc = livePic ? livePic : getUserAvatar(liveName);
+                            if (picEl.src !== newSrc) {
+                                picEl.src = newSrc;
+                            }
+                        }
+                    }
+                });
             });
         }
 
@@ -1745,10 +1800,8 @@
             const match = url.match(regExp);
 
             if (match && match[2].length === 11) {
-                // Use standard youtube.com embed
                 return `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`;
             }
-            // Try standard ID extraction if length != 11 but looks like ID
             if (match && match[2].length > 5) {
                 return `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`;
             }
@@ -1799,7 +1852,6 @@
 
             const embedUrl = convertToEmbed(v.videoUrl);
 
-            // Optimized for GitHub Pages hosting
             els.playerContainer.innerHTML = `<iframe 
                 src="${embedUrl}" 
                 title="Video player" 
@@ -1986,10 +2038,10 @@
 
             // Get all views from history
             const historySnapshot = await get(ref(db, 'users'));
-            const allUsers = historySnapshot.val() || {};
+            const allUsersData = historySnapshot.val() || {};
 
             // Count views per day from user history
-            Object.values(allUsers).forEach(user => {
+            Object.values(allUsersData).forEach(user => {
                 if (user.history) {
                     Object.values(user.history).forEach(historyItem => {
                         const videoData = allVideos[historyItem.videoId];
@@ -2091,29 +2143,35 @@
                 Object.keys(l).forEach(vid => { if (l[vid][currentUser.uid] && allVideos[vid]) els.videoGrid.appendChild(createCard(vid, allVideos[vid])); });
             });
         };
+        
+        // createCard function - used for History, Liked Videos, and Channel pages
         function createCard(id, v) {
-            const c = document.createElement('div'); c.className = 'video-card'; c.onclick = () => openWatch(id);
+            const c = document.createElement('div'); 
+            c.className = 'video-card'; 
+            c.onclick = () => openWatch(id);
 
-            // Initial Data (Stale/Snapshot)
+            // Create unique IDs for async DOM updates
+            const nameId = `card-name-${id}-${Date.now()}`;
+            const picId = `card-pic-${id}-${Date.now()}`;
+
+            // Get initial data from video or cache
             let uName = v.uploader || "User";
             let uPic = v.uploaderPic || "";
+
+            // Check allUsers cache first
+            if (allUsers[v.uid]) {
+                const cachedUser = allUsers[v.uid];
+                uName = cachedUser.displayName || uName;
+                uPic = cachedUser.photoURL || uPic;
+            }
 
             // Fast check: Current User
             if (currentUser && v.uid === currentUser.uid) {
                 uName = currentUser.displayName || uName;
                 uPic = currentUser.photoURL || uPic;
-            } else if (allUsers[v.uid]) {
-                // Fast check: Global Cache
-                const u = allUsers[v.uid];
-                uName = u.displayName || uName;
-                uPic = u.photoURL || uPic;
             }
 
             const avatarSrc = uPic ? uPic : getUserAvatar(uName);
-
-            // Unique IDs for live update
-            const nameId = `name-${id}`;
-            const picId = `pic-${id}`;
 
             c.innerHTML = `
                 <div class="thumbnail">
@@ -2131,8 +2189,7 @@
                     </div>
                 </div>`;
 
-            // ASYNC LIVE UPDATE (The Fix)
-            // Fetch this specific user's latest data and update DOM in-place
+            // ASYNC: Fetch latest user profile data and update DOM
             get(ref(db, `users/${v.uid}`)).then(snap => {
                 if (snap.exists()) {
                     const u = snap.val();
@@ -2154,7 +2211,7 @@
             return c;
         }
 
-        // Sub/Like/Comment Logic (Simplified for brevity but functional)
+        // Sub/Like/Comment Logic
         window.toggleSubscribe = () => {
             if (!currentUser) return openAuthModal();
             const v = allVideos[currentVideoId];
@@ -2241,13 +2298,12 @@
             if (s > 3600) return Math.floor(s / 3600) + " hours ago";
             return "Just now";
         }
-        function getUserAvatar(n) { return `https://ui-avatars.com/api/?name=${n}&background=random&color=fff`; }
+        function getUserAvatar(n) { return `https://ui-avatars.com/api/?name=${encodeURIComponent(n || 'User')}&background=random&color=fff`; }
 
         // Exports
         window.remove = remove; window.ref = ref; window.db = db;
 
-        // Load subs (genuine)
-        // Load subs (genuine) and fetch LIVE user data
+        // Load subscriptions with LIVE user data
         function loadSubscriptions() {
             if (!currentUser) return;
             onValue(ref(db, `users/${currentUser.uid}/subscriptions`), async (s) => {
