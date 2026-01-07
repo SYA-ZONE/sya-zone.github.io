@@ -1535,7 +1535,7 @@
                 showToast("Profile Updated!", "success");
                 closeModal('editProfileModal');
                 renderAuthUI();
-                
+
                 // Refresh the grid to show updated info
                 renderGrid(allVideos);
 
@@ -2128,11 +2128,65 @@
         window.openHistory = () => {
             if (!currentUser) return openAuthModal();
             els.watchOverlay.style.display = 'none';
-            els.videoGrid.innerHTML = '';
+            els.videoGrid.innerHTML = `
+                <div style="width:100%; display:flex; justify-content:space-between; align-items:center; padding:0 10px 20px 10px;">
+                    <h2>Watch History</h2>
+                    <button class="tbl-btn" onclick="clearAllHistory()" style="background:var(--bg-nav); padding:8px 16px; border-radius:18px; border:1px solid var(--border);">
+                        <span class="material-symbols-rounded" style="font-size:18px; vertical-align:middle; margin-right:4px;">delete_sweep</span> Clear All History
+                    </button>
+                </div>
+                <div id="historyGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; width:100%;"></div>
+            `;
+
+            const grid = document.getElementById('historyGrid');
+
             get(ref(db, `users/${currentUser.uid}/history`)).then(snap => {
-                const h = snap.val(); if (!h) return els.videoGrid.innerHTML = 'No history.';
-                Object.values(h).reverse().forEach(x => { if (allVideos[x.videoId]) els.videoGrid.appendChild(createCard(x.videoId, allVideos[x.videoId])); });
+                const h = snap.val();
+                if (!h) {
+                    grid.innerHTML = '<p class="empty-state">No history.</p>';
+                    return;
+                }
+
+                Object.entries(h).reverse().forEach(([key, item]) => {
+                    const videoId = item.videoId;
+                    if (allVideos[videoId]) {
+                        const card = createCard(videoId, allVideos[videoId]);
+
+                        // Add Delete Button to Card
+                        const delBtn = document.createElement('button');
+                        delBtn.innerHTML = '<span class="material-symbols-rounded">close</span>';
+                        delBtn.style.cssText = 'position:absolute; top:8px; right:8px; width:30px; height:30px; border-radius:50%; background:rgba(0,0,0,0.7); color:white; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:0.2s; z-index:10;';
+                        delBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            removeFromHistory(key);
+                            card.remove();
+                        };
+
+                        // Show button on hover
+                        card.style.position = 'relative';
+                        card.onmouseenter = () => delBtn.style.opacity = '1';
+                        card.onmouseleave = () => delBtn.style.opacity = '0';
+
+                        card.appendChild(delBtn);
+                        grid.appendChild(card);
+                    }
+                });
             });
+        };
+
+        window.clearAllHistory = () => {
+            showConfirm("Clear all watch history?", () => {
+                remove(ref(db, `users/${currentUser.uid}/history`))
+                    .then(() => {
+                        showToast("History cleared", "success");
+                        openHistory();
+                    });
+            });
+        };
+
+        window.removeFromHistory = (key) => {
+            remove(ref(db, `users/${currentUser.uid}/history/${key}`))
+                .then(() => showToast("Removed from history", "info"));
         };
         window.openLiked = () => {
             if (!currentUser) return openAuthModal();
@@ -2143,11 +2197,11 @@
                 Object.keys(l).forEach(vid => { if (l[vid][currentUser.uid] && allVideos[vid]) els.videoGrid.appendChild(createCard(vid, allVideos[vid])); });
             });
         };
-        
+
         // createCard function - used for History, Liked Videos, and Channel pages
         function createCard(id, v) {
-            const c = document.createElement('div'); 
-            c.className = 'video-card'; 
+            const c = document.createElement('div');
+            c.className = 'video-card';
             c.onclick = () => openWatch(id);
 
             // Create unique IDs for async DOM updates
