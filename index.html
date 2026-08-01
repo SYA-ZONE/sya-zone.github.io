@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainBoost — AI-Powered Memory Training Platform</title>
+  <meta name="description" content="Improve your memory, focus, and working memory with scientifically inspired memory exercises, adaptive difficulty, and cognitive analytics.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chart.js & Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Stylesheets -->
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/animations.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <a href="#home" class="brand-logo">
+        <i class="fas fa-brain"></i> BrainBoost
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="#home" class="nav-link active"><i class="fas fa-house"></i> Home</a></li>
+        <li><a href="#games" class="nav-link"><i class="fas fa-gamepad"></i> Memory Games</a></li>
+        <li><a href="#dashboard" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+        <li><a href="#rewards" class="nav-link"><i class="fas fa-trophy"></i> Rewards</a></li>
+        <li><a href="#settings" class="nav-link"><i class="fas fa-gear"></i> Settings</a></li>
+      </ul>
+
+      <div class="nav-stats-pill">
+        <div class="stat-item" title="User Level">
+          <i class="fas fa-medal text-gold"></i>
+          <span id="dash-user-level">1</span>
+        </div>
+        <div class="stat-item" title="Daily Streak">
+          <i class="fas fa-fire" style="color:#ef4444;"></i>
+          <span id="dash-streak">0 Days</span>
+        </div>
+        <div class="stat-item" title="Brain Coins">
+          <i class="fas fa-coins text-gold"></i>
+          <span id="dash-coins">100</span>
+        </div>
+      </div>
+
+      <button id="mobile-menu-btn" class="hamburger-btn" aria-label="Toggle navigation menu" aria-expanded="false">
+        <i class="fas fa-bars"></i>
+      </button>
+    </header>
+
+    <!-- MAIN VIEW SECTIONS (SPA ROUTER) -->
+    <main>
+
+      <!-- 1. LANDING / HOME VIEW -->
+      <section id="view-home" class="view-section active">
+        <div class="hero-wrapper">
+          <div class="hero-badge animate-pulse">
+            <i class="fas fa-sparkles"></i> 100% Free & Client-Side Memory Training
+          </div>
+          <h1 class="hero-title">Train Your Brain. <br /><span class="text-gradient">Supercharge Your Memory.</span></h1>
+          <p class="hero-subtitle">Scientifically designed cognitive exercises, adaptive difficulty, and AI-powered recommendations to boost working memory, focus, and speed.</p>
+          
+          <div class="hero-actions">
+            <button id="daily-challenge-btn" class="btn btn-gold btn-lg"><i class="fas fa-calendar-check"></i> Today's Daily Challenge</button>
+            <a href="#games" class="btn btn-primary"><i class="fas fa-play"></i> Explore All 10 Games</a>
+            <a href="#dashboard" class="btn btn-secondary"><i class="fas fa-chart-pie"></i> View Analytics</a>
+          </div>
+
+          <div class="brain-visualizer-container animate-float">
+            <canvas id="brain-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Benefits & How It Works -->
+        <div style="margin-top:4rem;">
+          <div class="section-header">
+            <h2 class="section-title">Why Train with BrainBoost?</h2>
+            <p class="section-subtitle">Measurable cognitive improvement backed by LocalStorage analytics.</p>
+          </div>
+
+          <div class="games-grid">
+            <div class="glass-card">
+              <div class="game-card-icon"><i class="fas fa-bolt"></i></div>
+              <h3>Working Memory</h3>
+              <p class="game-card-desc">Expand your ability to retain and manipulate multiple numbers and visual items simultaneously.</p>
+            </div>
+            <div class="glass-card">
+              <div class="game-card-icon" style="background:linear-gradient(135deg, #ec4899, #8b5cf6);"><i class="fas fa-eye"></i></div>
+              <h3>Visual & Spatial Recall</h3>
+              <p class="game-card-desc">Enhance spatial orientation and icon retention through matrix pattern recognition.</p>
+            </div>
+            <div class="glass-card">
+              <div class="game-card-icon" style="background:linear-gradient(135deg, #14b8a6, #10b981);"><i class="fas fa-bullseye"></i></div>
+              <h3>Focus & Speed</h3>
+              <p class="game-card-desc">Practice high-speed visual recognition and sharp reaction times with immediate feedback.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. MEMORY GAMES HUB VIEW -->
+      <section id="view-games" class="view-section">
+        <div class="section-header">
+          <h2 class="section-title">Memory Exercises Hub</h2>
+          <p class="section-subtitle">Select a cognitive game and pick your difficulty level.</p>
+        </div>
+
+        <div class="games-grid">
+          
+          <!-- Game 1: Card Matching -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon"><i class="fas fa-clone"></i></div>
+            <h3 class="game-card-title">1. Card Matching</h3>
+            <p class="game-card-desc">Flip cards, remember positions, and pair up matching icons with minimum moves.</p>
+            <div class="diff-selector-container" data-game="cardMatching">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="cardMatching" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 2: Sequence Memory -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #ef4444, #f59e0b);"><i class="fas fa-cubes"></i></div>
+            <h3 class="game-card-title">2. Sequence Memory</h3>
+            <p class="game-card-desc">Classic Simon Says challenge. Repeat increasing color, sound, and position sequences.</p>
+            <div class="diff-selector-container" data-game="sequenceMemory">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="sequenceMemory" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 3: Number Recall -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #3b82f6, #6366f1);"><i class="fas fa-hashtag"></i></div>
+            <h3 class="game-card-title">3. Number Recall</h3>
+            <p class="game-card-desc">Flash digit sequences on screen, then type the exact digits from working memory.</p>
+            <div class="diff-selector-container" data-game="numberRecall">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="numberRecall" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 4: Word Recall -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #10b981, #14b8a6);"><i class="fas fa-font"></i></div>
+            <h3 class="game-card-title">4. Word Recall</h3>
+            <p class="game-card-desc">Memorize lists of words, then recall and submit as many words as you remember.</p>
+            <div class="diff-selector-container" data-game="wordRecall">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="wordRecall" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 5: Image Memory -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #a855f7, #ec4899);"><i class="fas fa-image"></i></div>
+            <h3 class="game-card-title">5. Image Memory</h3>
+            <p class="game-card-desc">Observe a grid of icons and colors, then answer detail and presence questions.</p>
+            <div class="diff-selector-container" data-game="imageMemory">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="imageMemory" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 6: Pattern Memory -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-th"></i></div>
+            <h3 class="game-card-title">6. Pattern Memory</h3>
+            <p class="game-card-desc">A grid flashes active cells. Recreate the matrix layout precisely from memory.</p>
+            <div class="diff-selector-container" data-game="patternMemory">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="patternMemory" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 7: Face Memory -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #6366f1, #a855f7);"><i class="fas fa-user-astronaut"></i></div>
+            <h3 class="game-card-title">7. Face & Detail Memory</h3>
+            <p class="game-card-desc">Memorize character names, avatars, professions, and traits to pass recall tests.</p>
+            <div class="diff-selector-container" data-game="faceMemory">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="faceMemory" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 8: Emoji Recall -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #ec4899, #ef4444);"><i class="fas fa-icons"></i></div>
+            <h3 class="game-card-title">8. Emoji Sequence</h3>
+            <p class="game-card-desc">Observe emoji sequences and rebuild their order with rapid visual recognition.</p>
+            <div class="diff-selector-container" data-game="emojiRecall">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="emojiRecall" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 9: Sound Memory -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #14b8a6, #06b6d4);"><i class="fas fa-music"></i></div>
+            <h3 class="game-card-title">9. Sound Pitch Memory</h3>
+            <p class="game-card-desc">Listen to musical audio pitch sequences synthesized by Web Audio and repeat them.</p>
+            <div class="diff-selector-container" data-game="soundMemory">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="soundMemory" style="width:100%;">Play Game</button>
+          </div>
+
+          <!-- Game 10: Story Recall -->
+          <div class="glass-card game-card">
+            <div class="game-card-icon" style="background:linear-gradient(135deg, #8b5cf6, #3b82f6);"><i class="fas fa-book-open"></i></div>
+            <h3 class="game-card-title">10. Story Comprehension</h3>
+            <p class="game-card-desc">Read short stories with rich details, then answer comprehension recall questions.</p>
+            <div class="diff-selector-container" data-game="storyRecall">
+              <button class="diff-btn active" data-diff="easy"><i class="fas fa-seedling"></i> Easy</button>
+              <button class="diff-btn" data-diff="medium"><i class="fas fa-fire"></i> Med</button>
+              <button class="diff-btn" data-diff="hard"><i class="fas fa-skull"></i> Hard</button>
+              <button class="diff-btn" data-diff="expert"><i class="fas fa-crown"></i> Exp</button>
+            </div>
+            <button class="btn btn-primary launch-game-btn" data-game="storyRecall" style="width:100%;">Play Game</button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 3. GAME ARENA SCREEN -->
+      <section id="view-game-arena" class="view-section">
+        <div class="game-arena">
+          <div class="game-header">
+            <button id="exit-game-btn" class="btn btn-exit-game" onclick="gamesEngine.exitGame()"><i class="fas fa-arrow-left"></i> Exit Game</button>
+            <div class="game-meta-pills">
+              <div class="meta-pill"><i class="fas fa-gamepad text-gradient"></i> <span id="game-live-title">Memory Exercise</span></div>
+              <div class="meta-pill"><i class="fas fa-shield-halved text-gold"></i> <span id="game-live-diff">EASY</span></div>
+              <div class="meta-pill"><i class="fas fa-stopwatch text-gold animate-pulse"></i> <span id="game-live-timer">00:00</span></div>
+            </div>
+          </div>
+
+          <div id="game-arena-content" class="game-canvas-area">
+            <!-- Active Game renders here via js/games.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. DASHBOARD & ANALYTICS VIEW -->
+      <section id="view-dashboard" class="view-section">
+        <div class="section-header">
+          <h2 class="section-title">Performance Analytics Dashboard</h2>
+          <p class="section-subtitle">Track your Memory Index, XP leveling, sub-skills, and historical growth.</p>
+        </div>
+
+        <div class="dashboard-grid">
+
+          <!-- AI Coach Summary Widget -->
+          <div class="col-12" id="dashboard-coach-container"></div>
+
+          <!-- Memory Index Trend Chart -->
+          <div class="col-8">
+            <div class="glass-card chart-card">
+              <h3 style="margin-bottom:1rem;"><i class="fas fa-chart-line text-gradient"></i> Memory Index History</h3>
+              <div class="chart-wrapper">
+                <canvas id="chart-memory-index"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cognitive Radar Sub-skills -->
+          <div class="col-4">
+            <div class="glass-card chart-card">
+              <h3 style="margin-bottom:1rem;"><i class="fas fa-bullseye" style="color:var(--accent-secondary);"></i> Cognitive Sub-Skills</h3>
+              <div class="chart-wrapper">
+                <canvas id="chart-cognitive-radar"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accuracy & Reaction Speed Bar Chart -->
+          <div class="col-6">
+            <div class="glass-card chart-card">
+              <h3 style="margin-bottom:1rem;"><i class="fas fa-percentage" style="color:var(--accent-success);"></i> Accuracy Trend</h3>
+              <div class="chart-wrapper">
+                <canvas id="chart-accuracy-speed"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Exercise History Table -->
+          <div class="col-6">
+            <div class="glass-card chart-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                <h3><i class="fas fa-history text-gold"></i> Recent Activity</h3>
+                <button class="btn btn-secondary" onclick="dashboardManager.exportPerformanceReportPDF()"><i class="fas fa-print"></i> Export PDF</button>
+              </div>
+              <table style="width:100%; text-align:left; border-collapse:collapse;">
+                <thead>
+                  <tr style="border-bottom:1px solid var(--glass-border); color:var(--text-secondary); font-size:0.85rem;">
+                    <th style="padding:0.5rem 0;">Game</th>
+                    <th style="padding:0.5rem 0;">Diff</th>
+                    <th style="padding:0.5rem 0;">Accuracy</th>
+                    <th style="padding:0.5rem 0;">Speed</th>
+                    <th style="padding:0.5rem 0;">Index</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-history-table"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 5. REWARDS & SPIN WHEEL VIEW -->
+      <section id="view-rewards" class="view-section">
+        <div class="section-header">
+          <h2 class="section-title">Daily Rewards & Achievements</h2>
+          <p class="section-subtitle">Spin the daily prize wheel, unlock badges, and earn XP rewards.</p>
+        </div>
+
+        <div style="max-width:600px; margin:0 auto 3rem; text-align:center;">
+          <div class="glass-card">
+            <h3>Daily Spin Wheel</h3>
+            <p style="color:var(--text-secondary); margin-bottom:1rem;">Spin every day to claim bonus Brain Coins!</p>
+            <div class="wheel-container">
+              <div class="wheel-pointer"></div>
+              <canvas id="spin-canvas"></canvas>
+            </div>
+            <p id="spin-status" style="color:var(--text-secondary); margin-top:0.75rem; font-size:0.95rem;">Spin once every 24 hours to claim bonus Brain Coins.</p>
+            <button id="spin-wheel-btn" class="btn btn-gold" style="width:100%; font-size:1.1rem; margin-top:1rem;">
+              <i class="fas fa-arrows-rotate"></i> Spin Daily Wheel
+            </button>
+          </div>
+        </div>
+
+        <!-- Badges Grid -->
+        <h3 style="text-align:center; margin-bottom:1.5rem;">Unlocked Achievements</h3>
+        <div class="games-grid" id="dashboard-badges-container"></div>
+      </section>
+
+      <!-- 6. SETTINGS & BACKUP VIEW -->
+      <section id="view-settings" class="view-section">
+        <div class="section-header">
+          <h2 class="section-title">Settings & Data Management</h2>
+          <p class="section-subtitle">Customize themes, sound FX, and manage LocalStorage backups.</p>
+        </div>
+
+        <div style="max-width:600px; margin:0 auto 2rem;" class="glass-card">
+          <h3 style="margin-bottom:0.5rem;"><i class="fas fa-cloud" style="color:var(--accent-tertiary);"></i> Google Drive Sync</h3>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1rem;">
+            Sign in with your Google (Gmail) account to back up your BrainBoost progress to Google Drive and restore it on any device with the same account.
+          </p>
+          <div id="drive-status" style="margin-bottom:1rem; color:var(--text-secondary); font-size:0.95rem;">
+            Google Drive is not connected.
+          </div>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+            <button id="drive-connect-btn" class="btn btn-secondary"><i class="fas fa-google"></i> Sign in with Google</button>
+            <button id="drive-save-btn" class="btn btn-primary"><i class="fas fa-cloud-arrow-up"></i> Save Progress to Drive</button>
+            <button id="drive-load-btn" class="btn btn-secondary"><i class="fas fa-cloud-arrow-down"></i> Load Progress from Drive</button>
+          </div>
+        </div>
+
+        <div style="max-width:600px; margin:0 auto;" class="glass-card">
+          <h3 style="margin-bottom:1.5rem;">Theme Preferences</h3>
+          <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:2rem;">
+            <button class="btn btn-secondary theme-btn" data-theme="dark"><i class="fas fa-moon"></i> Cyber Dark</button>
+            <button class="btn btn-secondary theme-btn" data-theme="light"><i class="fas fa-sun"></i> Clean Light</button>
+            <button class="btn btn-secondary theme-btn" data-theme="blue"><i class="fas fa-water"></i> Oceanic Blue</button>
+            <button class="btn btn-secondary theme-btn" data-theme="purple"><i class="fas fa-atom"></i> Neon Purple</button>
+            <button class="btn btn-secondary theme-btn" data-theme="green"><i class="fas fa-leaf"></i> Forest Green</button>
+          </div>
+
+          <h3 style="margin-bottom:1rem;">LocalStorage Backup & Data</h3>
+          <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:1rem;">BrainBoost runs 100% locally. You can export or import your progress as a JSON file anytime.</p>
+          
+          <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+            <button id="export-data-btn" class="btn btn-primary"><i class="fas fa-download"></i> Export Data Backup (JSON)</button>
+            <label class="btn btn-secondary" style="cursor:pointer;">
+              <i class="fas fa-upload"></i> Restore Backup
+              <input type="file" id="import-data-file" accept=".json" style="display:none;" />
+            </label>
+          </div>
+
+          <button id="reset-data-btn" class="btn btn-secondary" style="color:var(--accent-danger); border-color:var(--accent-danger);">
+            <i class="fas fa-trash"></i> Reset Progress Data
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- POST-GAME PERFORMANCE ANALYSIS MODAL -->
+    <div id="performance-modal" class="modal-overlay">
+      <div class="modal-card" style="text-align:center;">
+        <div style="font-size:3rem; color:var(--accent-gold); margin-bottom:0.5rem;"><i class="fas fa-trophy"></i></div>
+        <h2>Exercise Complete!</h2>
+        <p style="color:var(--text-secondary); margin-bottom:1.5rem;">Here is your cognitive performance breakdown:</p>
+
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem; margin-bottom:1.5rem;">
+          <div class="glass-card" style="padding:1rem;">
+            <div style="font-size:0.85rem; color:var(--text-secondary);">Accuracy</div>
+            <div id="modal-accuracy" style="font-size:1.8rem; font-weight:800; color:var(--accent-success);">90%</div>
+          </div>
+          <div class="glass-card" style="padding:1rem;">
+            <div style="font-size:0.85rem; color:var(--text-secondary);">Speed</div>
+            <div id="modal-speed" style="font-size:1.8rem; font-weight:800; color:var(--accent-tertiary);">1.8s</div>
+          </div>
+          <div class="glass-card" style="padding:1rem;">
+            <div style="font-size:0.85rem; color:var(--text-secondary);">Memory Index</div>
+            <div id="modal-memory-index" style="font-size:1.8rem; font-weight:800; color:var(--accent-primary);">85</div>
+          </div>
+          <div class="glass-card" style="padding:1rem;">
+            <div style="font-size:0.85rem; color:var(--text-secondary);">XP Earned</div>
+            <div id="modal-xp" style="font-size:1.8rem; font-weight:800; color:var(--accent-gold);">+150 XP</div>
+          </div>
+        </div>
+
+        <button id="close-modal-btn" class="btn btn-primary" style="width:100%;">Continue to Dashboard</button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>BrainBoost &copy; 2026 — Client-Side Memory Training Platform. Privacy-First & 100% Offline Capable.</p>
+    </footer>
+
+  </div>
+
+  <!-- JavaScript Application Entry Points -->
+  <script src="./js/drive.js"></script>
+  <script src="./js/storage.js"></script>
+  <script src="./js/utils.js"></script>
+  <script src="./js/coach.js"></script>
+  <script src="./js/achievements.js"></script>
+  <script src="./js/games.js"></script>
+  <script src="./js/analytics.js"></script>
+  <script src="./js/dashboard.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+</html>
