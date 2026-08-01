@@ -1,0 +1,37 @@
+[
+  {
+    "id": "img_pack_1",
+    "theme": "Celestial & Nature",
+    "items": [
+      { "id": "i1", "icon": "fa-sun", "color": "#f59e0b", "label": "Golden Sun" },
+      { "id": "i2", "icon": "fa-moon", "color": "#8b5cf6", "label": "Crescent Moon" },
+      { "id": "i3", "icon": "fa-tree", "color": "#10b981", "label": "Pine Tree" },
+      { "id": "i4", "icon": "fa-water", "color": "#3b82f6", "label": "Ocean Wave" },
+      { "id": "i5", "icon": "fa-fire", "color": "#ef4444", "label": "Flame" },
+      { "id": "i6", "icon": "fa-mountain", "color": "#64748b", "label": "Mountain Peak" },
+      { "id": "i7", "icon": "fa-bolt", "color": "#eab308", "label": "Lightning" },
+      { "id": "i8", "icon": "fa-snowflake", "color": "#06b6d4", "label": "Snowflake" },
+      { "id": "i9", "icon": "fa-leaf", "color": "#84cc16", "label": "Green Leaf" },
+      { "id": "i10", "icon": "fa-cloud-rain", "color": "#60a5fa", "label": "Rain Cloud" },
+      { "id": "i11", "icon": "fa-seedling", "color": "#22c55e", "label": "Sprout" },
+      { "id": "i12", "icon": "fa-volcano", "color": "#dc2626", "label": "Volcano" }
+    ],
+    "questions": [
+      {
+        "question": "Which of these icons was highlighted in Red (#ef4444)?",
+        "options": ["Golden Sun", "Flame", "Snowflake", "Green Leaf"],
+        "answer": "Flame"
+      },
+      {
+        "question": "How many water/weather-related icons were present?",
+        "options": ["2", "3", "4", "5"],
+        "answer": "4"
+      },
+      {
+        "question": "Was the Pine Tree icon present in the visual grid?",
+        "options": ["Yes", "No"],
+        "answer": "Yes"
+      }
+    ]
+  }
+]
